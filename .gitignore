@@ -1,7 +1,4 @@
+.env*
+db.sqlite3
+.venv/
 env/
-__pycache__/
-.DS_Store
-*.pyc
-*.sqlite3
-.env
-.env.prod
