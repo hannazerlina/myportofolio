@@ -1,26 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ name }} - Portfolio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
-            <nav>
-                <a href="{% url 'main:show_main' %}">Profile</a>
-                <a href="{% url 'main:show_experience' %}">Experience</a>
-            </nav>
-        </div>
-    </header>
+{% extends "base.html" %}
+{% block content %}
 
-    <main>
         <section class="hero" id="profile">
             <div class="container hero-grid">
                 <article class="hero-identity">
@@ -44,9 +24,10 @@
                         </div>
                     </dl>
                     <div class="social-links">
-                        <a href="https://github.com/hannazerlina" class="social-link">GitHub</a>
-                        <a href="https://www.linkedin.com/in/hannazerlina/" class="social-link">LinkedIn</a>
-                        <a href="mailto:hannazerlina@gmail.com" class="social-link">Email</a>
+                        <a href="https://www.instagram.com/hannazerlina/" class="social-link">{% include "includes/social_icon.html" with icon="instagram" %}<span>Instagram</span></a>
+                        <a href="https://github.com/hannazerlina" class="social-link">{% include "includes/social_icon.html" with icon="github" %}<span>GitHub</span></a>
+                        <a href="https://www.linkedin.com/in/hannazerlina/" class="social-link">{% include "includes/social_icon.html" with icon="linkedin" %}<span>LinkedIn</span></a>
+                        <a href="mailto:hannazerlina@gmail.com" class="social-link">{% include "includes/social_icon.html" with icon="email" %}<span>Email</span></a>
                     </div>
                 </article>
             </div>
@@ -54,108 +35,19 @@
 
         <section class="section-block" id="skills">
             <div class="container">
-                <div class="section-heading">
-                    <p class="eyebrow">Skills</p>
-                </div>
-
+                <div class="section-heading"><h2 class="eyebrow">Skills</h2></div>
                 <div class="skills-grid">
-                    <article class="skill-card">
-                        <span class="skill-tag">Design</span>
-                        <h3>UI/UX & Product Thinking</h3>
-                        <ul>
-                            <li>User-centered interface design</li>
-                            <li>Low-fidelity prototyping</li>
-                            <li>Clean, intuitive system flows</li>
-                    </article>
-
-                    <article class="skill-card">
-                        <span class="skill-tag">Development</span>
-                        <h3>Web & Data Systems</h3>
-                        <ul>
-                            <li>HTML5 & CSS3</li>
-                            <li>Python & Django</li>
-                            <li>Data analysis and insight extraction</li>
-                        </ul>
-                    </article>
-
-                    <article class="skill-card">
-                        <span class="skill-tag">Soft Skills</span>
-                        <h3>Collaboration & Problem Solving</h3>
-                        <ul>
-                            <li>Clear communication</li>
-                            <li>Task planning and execution</li>
-                            <li>Team-based project mindset</li>
-                    
-                        </ul>
-                    </article>
+<article class="skill-card"><span class="skill-tag">Creative</span><h3>Music & Creative</h3><ul><li>Songwriting, composition & arrangement</li><li>Music direction & orchestra coordination</li><li>Ableton & Logic Pro</li></ul></article>
+<article class="skill-card"><span class="skill-tag">Fundamentals</span><h3>Technology</h3><ul><li>Python & Java — basic</li><li>HTML, CSS & Django MVT — basic</li><li>Git & GitHub — basic</li><li>Algoritma, debugging & problem solving — basic</li></ul></article>
+<article class="skill-card"><span class="skill-tag">Collaboration</span><h3>Leadership & Communication</h3><ul><li>Koordinasi tim & perencanaan acara</li><li>Negosiasi sponsorship</li><li>Pembuatan konten & strategi media sosial</li><li>Digital marketing & presentasi proyek</li></ul></article>
+<article class="skill-card"><span class="skill-tag">Languages</span><h3>Languages</h3><ul><li>Bahasa Indonesia — native</li><li>English — proficient</li><li>Korean — intermediate</li></ul></article>
                 </div>
             </div>
         </section>
-
-        <section class="section-block projects-block" id="projects">
+        <section class="section-block" id="experience">
             <div class="container">
-                <div class="section-heading">
-                    <p class="eyebrow">Projects</p>
-                </div>
-
-                <div class="projects-grid">
-                    <article class="project-card">
-                        <span class="project-status">Portfolio Website</span>
-                        <h3>Personal brand landing page</h3>
-                        <p>Built a personal portfolio interface using HTML5 and CSS3 to present my profile, capabilities, and professional identity in a polished, easy-to-navigate format.</p>
-
-                    </article>
-
-                    <article class="project-card">
-                        <span class="project-status">Data Analysis</span>
-                        <h3>Insight-driven dashboard concept</h3>
-                        <p>Explored how structured data can support better decision-making by transforming information into readable visuals and actionable business insights.</p>
-                    </article>
-
-                    <article class="project-card">
-                        <span class="project-status">System Design</span>
-                        <h3>Digital solution prototype</h3>
-                        <p>Designed a simple digital concept aimed at improving user experience and addressing everyday problems with practical, scalable technology solutions.</p>
-                        
-                    </article>
-                </div>
+                <div class="section-heading"><h2 class="eyebrow">Experience</h2></div>
+                {% include "includes/experience_list.html" %}
             </div>
         </section>
-
-        <section class="section-block experience-block" id="experience">
-            <div class="container">
-                <div class="section-heading">
-                    <p class="eyebrow">Experience</p>
-                </div>
-
-                <div class="experience-grid">
-                    <article class="experience-card">
-                        <span class="experience-year">2024 — Present</span>
-                        <h3>Information Systems Student</h3>
-                        <p>Building a strong foundation in digital systems, data literacy, and product thinking while exploring practical solutions that benefit real users.</p>
-                    </article>
-
-                    <article class="experience-card">
-                        <span class="experience-year">2023 — 2024</span>
-                        <h3>Campus Organization & Team Activities</h3>
-                        <p>Participated in collaborative academic and student-driven initiatives, strengthening communication, coordination, and project execution skills.</p>
-                    </article>
-
-                    <article class="experience-card">
-                        <span class="experience-year">2022 — 2023</span>
-                        <h3>Self-Directed Learning & Digital Projects</h3>
-                        <p>Focused on developing web design, workflow organization, and problem-solving capabilities through personal projects and continuous practice.</p>
-                        
-                    </article>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="site-footer">
-        <div class="container">
-            <p>&copy; 2026 Hanna Zerlina Razaq Putri Wicaksono. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
-        </div>
-    </footer>
-</body>
-</html>
+{% endblock %}
