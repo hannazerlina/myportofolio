@@ -1,0 +1,23 @@
+                {% if experience_list %}
+                    <div class="experience-grid">
+                        {% for experience in experience_list %}
+                            <article class="experience-card">
+                                <span class="experience-tag">{{ experience.get_category_display }}</span>
+                                <span class="experience-year">
+                                    {% if experience.is_ongoing %}
+                                        {{ experience.started_at|date:"Y" }} — Sedang berlangsung
+                                    {% else %}
+                                        {{ experience.started_at|date:"Y" }} — {{ experience.ended_at|date:"Y" }} · Selesai
+                                    {% endif %}
+                                </span>
+                                <h3 class="experience-organization">{% if experience.title == "Trinity Optima Production" %}{{ experience.title }}{% else %}{{ experience.location }}{% endif %}</h3>
+                                <p class="experience-role">{% if experience.title == "Trinity Optima Production" %}Talent{% else %}{{ experience.title }}{% endif %}</p>
+                                <p>{{ experience.description }}</p>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <p>Belum ada pengalaman yang ditambahkan.</p>
+                    </div>
+                {% endif %}

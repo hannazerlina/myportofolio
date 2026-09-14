@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Projects | Hanna Zerlina{% endblock %}
+{% block content %}
+<section class="section-block portfolio-page">
+    <div class="container">
+        <div class="section-heading"><h1 class="eyebrow">Projects</h1></div>
+        <div class="project-list">
+            {% for project in project_list %}
+            <article class="project-card">
+                <span class="project-status">{{ project.role }} · {{ project.year }}</span>
+                <h2>{{ project.title }}</h2>
+                <p>{{ project.description }}</p>
+                {% if project.spotify_url %}<a class="social-link" href="{{ project.spotify_url }}" target="_blank" rel="noopener noreferrer">{% include "includes/social_icon.html" with icon="spotify" %}<span>Dengarkan di Spotify ↗</span></a>{% endif %}
+            </article>
+            {% empty %}
+            <div class="empty-state"><p>Belum ada proyek yang ditambahkan.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

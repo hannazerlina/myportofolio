@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Achievements | Hanna Zerlina{% endblock %}
+{% block content %}
+<section class="section-block portfolio-page">
+    <div class="container">
+        <div class="section-heading"><h1 class="eyebrow">Achievements</h1></div>
+        <div class="education-grid">
+            {% for achievement in achievement_list %}
+            <article class="experience-card">
+                <span class="experience-year">{{ achievement.year }} · {{ achievement.award }}</span>
+                <h2>{{ achievement.title }}</h2>
+                {% if achievement.organizer %}<p><strong>Penyelenggara:</strong> {{ achievement.organizer }}</p>{% endif %}
+                {% if achievement.description %}<p>{{ achievement.description }}</p>{% endif %}
+            </article>
+            {% empty %}
+            <div class="empty-state"><p>Belum ada pencapaian yang ditambahkan.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

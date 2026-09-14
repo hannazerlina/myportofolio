@@ -1,16 +1,18 @@
 from django.shortcuts import render
 
-from main.models import Experience
+from main.models import Experience, Education, Project, Achievement
 
 
 def show_main(request):
     context = {
         "name": "Hanna Zerlina Razaq Putri Wicaksono",
         "npm": "2506594692",
-        "study_program": "S1 Sistem Inforamasi",
+        "experience_list": Experience.objects.order_by('-started_at', 'title'),
+        "study_program": "S1 Sistem Informasi",
         "bio": (
-            "Mahasiswa Ilmu Komputer Universitas Indonesia yang tertarik "
-            "pada pengembangan perangkat lunak dan pendidikan."
+            "Hi, I’m Hanna, an Information Systems student at Universitas Indonesia. "
+            "I’m interested in technology, music, and the creative industry. "
+            "I love exploring new ideas by learning along the way"
         ),
     }
     return render(request, "index.html", context)
@@ -19,6 +21,25 @@ def show_main(request):
 def show_experience(request):
     context = {
         "name": "Hanna Zerlina Razaq Putri Wicaksono",
-        "experience_list": Experience.objects.all(),
+        "experience_list": Experience.objects.order_by('-started_at', 'title'),
     }
     return render(request, "experience.html", context)
+
+
+def show_education(request):
+    return render(request, 'education.html', {
+        'education_list': Education.objects.all(),
+    })
+
+
+def show_projects(request):
+    return render(request, 'projects.html', {
+        'project_list': Project.objects.all(),
+    })
+
+
+
+def show_achievements(request):
+    return render(request, 'achievements.html', {
+        'achievement_list': Achievement.objects.all(),
+    })

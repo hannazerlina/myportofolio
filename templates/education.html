@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Education | Hanna Zerlina{% endblock %}
+{% block content %}
+<section class="section-block portfolio-page">
+    <div class="container">
+        <div class="section-heading"><h1 class="eyebrow">Education</h1></div>
+        <div class="education-grid">
+            {% for education in education_list %}
+            <article class="experience-card">
+                <span class="experience-year">{{ education.start_year }} — {{ education.end_year|default_if_none:"Present" }}</span>
+                <div class="education-institution">
+                    {% if 'Labschool' in education.institution %}
+                    <img src="/static/img/logo-labschool.png" alt="Logo SMA Labschool">
+                    {% elif 'Indonesia' in education.institution %}
+                    <img src="/static/img/logo-ui.png" alt="Logo Universitas Indonesia">
+                    {% endif %}
+                    <h2>{{ education.institution }}</h2>
+                </div>
+                <p>{{ education.program }}</p>
+            </article>
+            {% empty %}
+            <div class="empty-state"><p>Belum ada pendidikan yang ditambahkan.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
