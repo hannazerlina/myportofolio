@@ -59,3 +59,26 @@ Hasil pengujian: 19 test berhasil.
 ### AI Disclosure
 
 Saya menggunakan bantuan ChatGPT sebagai bantuan dalam mengembangkan model, migrasi, view, URL, template, CSS, dan unit test untuk Tugas 2. Saya tetap memeriksa dan menjalankan pengujian pada proyek.
+
+## Portofolio — Tutor 3
+
+Pada tutor 3, saya menambahkan fitur form dan data delivery untuk project. Saya membuat model form agar user dapat menambahkan project baru melalui halaman form, lalu data dikirim ke backend menggunakan request POST dan disimpan ke database.
+
+Saya juga menambahkan endpoint JSON untuk mengambil data project dari server serta fitur pencarian berdasarkan judul project. Selain itu, saya menambahkan fitur hapus project dengan modal konfirmasi agar proses pengelolaan project lebih mudah dan rapi.
+
+### Fitur yang ditambahkan
+
+- Form tambah project
+- Validasi input form
+- JSON API untuk project
+- Search project berdasarkan judul
+- Hapus project dengan konfirmasi
+- Integrasi antara template, view, dan frontend JavaScript
+
+### Pengujian
+
+```bash
+python manage.py test
+```
+
+Semua pengujian berhasil dijalankan dan project tetap dalam kondisi aman.

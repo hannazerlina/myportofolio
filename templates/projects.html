@@ -1,21 +1,56 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Projects | Hanna Zerlina{% endblock %}
 {% block content %}
 <section class="section-block portfolio-page">
     <div class="container">
-        <div class="section-heading"><h1 class="eyebrow">Projects</h1></div>
-        <div class="project-list">
+        <div class="project-header">
+            <div class="section-heading"><h1 class="eyebrow">Projects</h1></div>
+            <a href="{% url 'main:create_project' %}" class="social-link">+ Tambah Proyek</a>
+        </div>
+
+        <form method="get" action="{% url 'main:show_projects' %}" class="project-search" data-project-search-form>
+            <input type="search"
+                   name="title"
+                   value="{{ title_query }}"
+                   placeholder="Cari berdasarkan nama proyek"
+                   class="project-search__input"
+                   data-project-search-input
+                   aria-label="Cari berdasarkan nama proyek">
+            <button type="submit" class="button">Cari</button>
+        </form>
+
+        <div class="project-list" data-project-list data-api-url="{% url 'main:get_projects_json' %}">
             {% for project in project_list %}
             <article class="project-card">
                 <span class="project-status">{{ project.role }} · {{ project.year }}</span>
                 <h2>{{ project.title }}</h2>
                 <p>{{ project.description }}</p>
-                {% if project.spotify_url %}<a class="social-link" href="{{ project.spotify_url }}" target="_blank" rel="noopener noreferrer">{% include "includes/social_icon.html" with icon="spotify" %}<span>Dengarkan di Spotify ↗</span></a>{% endif %}
+
+                <div class="project-card-actions">
+                    {% if project.spotify_url %}
+                        <a class="social-link" href="{{ project.spotify_url }}" target="_blank" rel="noopener noreferrer">
+                            {% include "includes/social_icon.html" with icon="spotify" %}
+                            <span>Dengarkan di Spotify ↗</span>
+                        </a>
+                    {% endif %}
+                    {% include "components/project_delete_modal.html" with project=project %}
+                </div>
             </article>
             {% empty %}
-            <div class="empty-state"><p>Belum ada proyek yang ditambahkan.</p></div>
+            <div class="empty-state">
+                {% if title_query %}
+                    <p>Tidak ada proyek dengan nama tersebut.</p>
+                {% else %}
+                    <p>Belum ada proyek yang ditambahkan.</p>
+                {% endif %}
+            </div>
             {% endfor %}
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/projects.js' %}" defer></script>
 {% endblock %}

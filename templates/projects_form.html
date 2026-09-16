@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Tambah Proyek | Hanna Zerlina{% endblock %}
+{% block content %}
+<section class="project-editor">
+    <div class="container editor-container">
+        <a class="editor-back" href="{% url 'main:show_projects' %}">← Kembali ke Projects</a>
+        <header class="editor-heading">
+            <span class="editor-kicker">MY PORTFOLIO / NEW PROJECT</span>
+            <h1>Tambah karya baru<span>.</span></h1>
+            <p>Ceritakan proyekmu dan peran yang kamu ambil di dalamnya.</p>
+        </header>
+        <form method="post" action="{% url 'main:create_project' %}" class="project-form" data-project-form data-redirect-url="{% url 'main:show_projects' %}">
+            {% csrf_token %}
+            <div class="editor-form-heading">
+                <h2>Detail proyek</h2>
+                <p>Semua kolom wajib diisi, kecuali link Spotify.</p>
+            </div>
+            {% if form.errors %}
+                <div class="editor-errors" role="alert" data-project-form-errors>
+                    <p>Periksa kembali isian yang ditandai di bawah.</p>
+                    {{ form.non_field_errors }}
+                </div>
+            {% else %}
+                <div class="editor-errors" role="alert" data-project-form-errors hidden></div>
+            {% endif %}
+            <div class="editor-fields">
+                {% for field in form %}
+                <div class="editor-field {% if field.name == 'role' or field.name == 'year' %}editor-field-half{% endif %}{% if field.errors %} editor-field-invalid{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %}<span class="editor-optional">Opsional</span>{% endif %}</label>
+                    {{ field }}
+                    {% if field.help_text %}<p class="editor-hint" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+                    {% if field.errors %}<div id="{{ field.auto_id }}_error" class="editor-field-errors">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="editor-actions">
+                <a href="{% url 'main:show_projects' %}" class="editor-cancel">Batal</a>
+                <button type="submit" class="editor-save">Simpan proyek <span aria-hidden="true">↗</span></button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/project_form.js' %}" defer></script>
+{% endblock %}
