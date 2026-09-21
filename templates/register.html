@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Daftar Akun | Hanna Zerlina{% endblock %}
+{% block content %}
+<section class="project-editor">
+    <div class="container editor-container">
+        <header class="editor-heading">
+            <h1>Daftar akun</h1>
+            <p>Buat akun untuk berinteraksi dengan portofolio ini.</p>
+        </header>
+        <form method="post" class="project-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="editor-fields">
+                {% for field in form %}
+                <div class="editor-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                    <div class="editor-hint" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                    <div class="editor-field-errors" id="{{ field.auto_id }}_error">{{ field.errors }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="editor-actions">
+                <a href="{% url 'main:show_main' %}" class="editor-cancel">Batal</a>
+                <button type="submit" class="editor-save">Daftar</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django.urls import path
 from main.views import (
+    register,
     create_project,
     delete_education,
     delete_project,
@@ -18,6 +19,7 @@ from main.views import (
 app_name = 'main'
 
 urlpatterns = [
+    path("register/", register, name="register"),
     path("api/projects/", get_projects_json, name="get_projects_json"),
     path('achievements/', show_achievements, name='show_achievements'),
     path('education/', show_education, name='show_education'),

@@ -181,3 +181,44 @@ class CVDataTests(TestCase):
         self.assertEqual(experience.description, 'Deskripsi diperbarui pemilik.')
         self.assertEqual(Experience.objects.count(), 9)
         self.assertEqual(Achievement.objects.count(), 4)
+
+
+class RegisterTests(TestCase):
+    def test_register_form(self):
+        response = self.client.get(reverse('main:register'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'register.html')
+        self.assertContains(response, 'csrfmiddlewaretoken')
+
+    def test_register_creates_user_with_hashed_password(self):
+        import secrets
+        from django.contrib.auth import get_user_model
+        password = secrets.token_urlsafe(24)
+        response = self.client.post(reverse('main:register'), {
+            'username': 'registration_test',
+            'password1': password,
+            'password2': password,
+        })
+        self.assertRedirects(response, reverse('main:show_main'))
+        user = get_user_model().objects.get(username='registration_test')
+        self.assertTrue(user.check_password(password))
+        self.assertNotEqual(user.password, password)
+        self.assertFalse(user.is_superuser)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_invalid_registration_does_not_create_user(self):
+        from django.contrib.auth import get_user_model
+        before = get_user_model().objects.count()
+        response = self.client.post(reverse('main:register'), {
+            'username': 'invalid_registration',
+            'password1': 'short',
+            'password2': 'different',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'].errors)
+        self.assertEqual(get_user_model().objects.count(), before)
+
+    def test_register_requires_csrf(self):
+        from django.test import Client
+        response = Client(enforce_csrf_checks=True).post(reverse('main:register'), {})
+        self.assertEqual(response.status_code, 403)

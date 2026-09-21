@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.forms import UserCreationForm
 from django.core import serializers
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -170,3 +171,17 @@ def get_education_json(request):
         education_json,
         content_type="application/json",
     )
+
+
+def register(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Akun berhasil dibuat!")
+            return redirect("main:show_main")
+    else:
+        form = UserCreationForm()
+
+    return render(request, "register.html", {"form": form})
