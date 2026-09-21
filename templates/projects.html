@@ -6,7 +6,11 @@
     <div class="container">
         <div class="project-header">
             <div class="section-heading"><h1 class="eyebrow">Projects</h1></div>
-            <a href="{% url 'main:create_project' %}" class="social-link">+ Tambah Proyek</a>
+            {% if user.is_superuser %}
+                <a href="{% url 'main:create_project' %}" class="social-link">
+                    + Tambah Proyek
+                </a>
+            {% endif %}
         </div>
 
         <form method="get" action="{% url 'main:show_projects' %}" class="project-search" data-project-search-form>
@@ -28,13 +32,18 @@
                 <p>{{ project.description }}</p>
 
                 <div class="project-card-actions">
+                    {% include "components/project_star.html" with project=project %}
+
                     {% if project.spotify_url %}
                         <a class="social-link" href="{{ project.spotify_url }}" target="_blank" rel="noopener noreferrer">
                             {% include "includes/social_icon.html" with icon="spotify" %}
                             <span>Dengarkan di Spotify ↗</span>
                         </a>
                     {% endif %}
-                    {% include "components/project_delete_modal.html" with project=project %}
+
+                    {% if user.is_superuser %}
+                        {% include "components/project_delete_modal.html" with project=project %}
+                    {% endif %}
                 </div>
             </article>
             {% empty %}
@@ -49,8 +58,4 @@
         </div>
     </div>
 </section>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/projects.js' %}" defer></script>
 {% endblock %}

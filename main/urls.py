@@ -12,6 +12,7 @@ from main.views import (
     show_experience,
     show_main,
     show_projects,
+    toggle_star,
     update_education,
     login_user,
     logout_user,
@@ -36,4 +37,5 @@ urlpatterns = [
     path("api/education/", get_education_json, name="get_education_json"),
     path("login/", login_user, name="login"),
     path("logout/", logout_user, name="logout"),
+    path("projects/<int:project_id>/star/", toggle_star, name="toggle_star"),
 ]

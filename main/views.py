@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 import datetime
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 
 from main.forms import ProjectForm, EducationForm
 from main.models import Achievement, Education, Experience, Project
@@ -63,8 +65,11 @@ def show_projects(request):
         'title_query': title_query,
     })
 
-
+@login_required(login_url="main:login")
 def delete_project(request, project_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+    
     project = get_object_or_404(Project, pk=project_id)
 
     if request.method == "POST":
@@ -87,7 +92,10 @@ def show_achievements(request):
         'achievement_list': Achievement.objects.all(),
     })
 
+@login_required(login_url="main:login")
 def create_project(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     if request.method == "POST":
         form = ProjectForm(request.POST)
 
@@ -121,10 +129,18 @@ def get_projects_json(request):
     if title_query:
         projects = projects.filter(title__icontains=title_query)
 
-    projects_json = serializers.serialize("json", projects)
+    projects_json = serializers.serialize(
+        "json",
+        projects,
+        use_natural_foreign_keys=True,
+    )
     return HttpResponse(projects_json, content_type="application/json")
 
+@login_required(login_url="main:login")
 def create_education(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     if request.method == "POST":
         form = EducationForm(request.POST)
 
@@ -141,7 +157,11 @@ def create_education(request):
     })
 
 
+@login_required(login_url="main:login")
 def update_education(request, education_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     education = get_object_or_404(Education, pk=education_id)
 
     if request.method == "POST":
@@ -158,7 +178,11 @@ def update_education(request, education_id):
         "page_title": "Edit Pendidikan",
     })
     
+@login_required(login_url="main:login")
 def delete_education(request, education_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     education = get_object_or_404(Education, pk=education_id)
 
     if request.method == "POST":
@@ -169,7 +193,7 @@ def delete_education(request, education_id):
 
 def get_education_json(request):
     education = Education.objects.all()
-    education_json = serializers.serialize("json", education)
+    education_json = serializers.serialize("json", education, use_natural_foreign_keys=True)
 
     return HttpResponse(
         education_json,
@@ -214,3 +238,15 @@ def logout_user(request):
     response = redirect("main:show_main")
     response.delete_cookie("last_login")
     return response
+
+@login_required(login_url="/login/")
+def toggle_star(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+
+    if request.method == "POST":
+        if request.user in project.starred_by.all():
+            project.starred_by.remove(request.user)
+        else:
+            project.starred_by.add(request.user)
+
+    return redirect("main:show_projects")

@@ -1,0 +1,15 @@
+{% if user.is_authenticated %}
+    <form method="post" action="{% url 'main:toggle_star' project.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="social-link">
+            {% if user in project.starred_by.all %}
+                ★ Batalkan Star
+            {% else %}
+                ☆ Star
+            {% endif %}
+            ({{ project.starred_by.count }})
+        </button>
+    </form>
+{% else %}
+    <span>☆ {{ project.starred_by.count }} star</span>
+{% endif %}

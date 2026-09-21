@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Experience(models.Model):
@@ -49,6 +50,11 @@ class Project(models.Model):
     year = models.PositiveSmallIntegerField()
     description = models.TextField()
     spotify_url = models.URLField(blank=True)
+    starred_by = models.ManyToManyField(
+        User,
+        related_name="starred_projects",
+        blank=True,
+    )
 
     class Meta:
         ordering = ['-year', 'title']
