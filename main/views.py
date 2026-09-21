@@ -1,9 +1,12 @@
 from django.contrib import messages
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login, logout
 from django.core import serializers
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
+import datetime
 
 from main.forms import ProjectForm, EducationForm
 from main.models import Achievement, Education, Experience, Project
@@ -19,7 +22,8 @@ def show_main(request):
             "Hi, I’m Hanna, an Information Systems student at Universitas Indonesia. "
             "I’m interested in technology, music, and the creative industry. "
             "I love exploring new ideas by learning along the way"
-        ),
+        ), "last_login": request.COOKIES.get("last_login", "Belum ada sesi login"),
+        "faculty": "Fakultas Ilmu Komputer"
     }
     return render(request, "index.html", context)
 
@@ -180,8 +184,33 @@ def register(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Akun berhasil dibuat!")
-            return redirect("main:show_main")
+            return redirect("main:login")
     else:
         form = UserCreationForm()
 
     return render(request, "register.html", {"form": form})
+
+def login_user(request):
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+
+        if form.is_valid():
+            login(request, form.get_user())
+            response = redirect("main:show_main")
+            response.set_cookie(
+                "last_login",
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            )
+            return response
+        
+    else:
+        form = AuthenticationForm(request)
+
+    return render(request, "login.html", {"form": form})
+
+@require_POST
+def logout_user(request):
+    logout(request)
+    response = redirect("main:show_main")
+    response.delete_cookie("last_login")
+    return response

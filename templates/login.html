@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Login | Hanna Zerlina{% endblock %}
+
+{% block content %}
+<section class="project-editor">
+    <div class="container editor-container">
+        <header class="editor-heading">
+            <h1>Masuk ke akun</h1>
+            <p>Gunakan akun yang sudah kamu daftarkan.</p>
+        </header>
+
+        <form method="post" class="project-form">
+            {% csrf_token %}
+
+            <div class="editor-field-errors">
+                {{ form.non_field_errors }}
+            </div>
+
+            <div class="editor-fields">
+                {% for field in form %}
+                    <div class="editor-field">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="editor-actions">
+                <a href="{% url 'main:register' %}"
+                   class="editor-cancel">
+                    Daftar akun
+                </a>
+                <button type="submit" class="editor-save">
+                    Login
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

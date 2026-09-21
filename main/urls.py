@@ -13,6 +13,8 @@ from main.views import (
     show_main,
     show_projects,
     update_education,
+    login_user,
+    logout_user,
 )
 
 
@@ -32,4 +34,6 @@ urlpatterns = [
     path("education/<int:education_id>/delete/", delete_education, name="delete_education"),
     path("education/<int:education_id>/update/", update_education, name="update_education"),
     path("api/education/", get_education_json, name="get_education_json"),
+    path("login/", login_user, name="login"),
+    path("logout/", logout_user, name="logout"),
 ]
