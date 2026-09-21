@@ -1,5 +1,5 @@
 from django.forms import ModelForm, TextInput, Textarea, URLInput, NumberInput
-from main.models import Project
+from main.models import Project, Education
 
 
 class ProjectForm(ModelForm):
@@ -34,4 +34,16 @@ class ProjectForm(ModelForm):
             "spotify_url": URLInput(attrs={
                 "placeholder": "https://open.spotify.com/...",
             }),
+        }
+        
+class EducationForm(ModelForm):
+    class Meta:
+        model = Education
+        fields = ["institution", "program", "start_year", "end_year"]
+
+        labels = {
+            "institution": "Nama Sekolah / Universitas",
+            "program": "Jurusan / Program Studi",
+            "start_year": "Tahun Masuk",
+            "end_year": "Tahun Selesai",
         }

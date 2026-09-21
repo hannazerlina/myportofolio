@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from main.forms import ProjectForm
+from main.forms import ProjectForm, EducationForm
 from main.models import Achievement, Education, Experience, Project
 
 
@@ -109,3 +109,19 @@ def get_projects_json(request):
 
     projects_json = serializers.serialize("json", projects)
     return HttpResponse(projects_json, content_type="application/json")
+
+def create_education(request):
+    if request.method == "POST":
+        form = EducationForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pendidikan berhasil ditambahkan!")
+            return redirect("main:show_education")
+    else:
+        form = EducationForm()
+
+    return render(request, "education_form.html", {
+        "form": form,
+        "page_title": "Tambah Pendidikan",
+    })

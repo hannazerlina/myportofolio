@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | Hanna Zerlina{% endblock %}
+
+{% block content %}
+<section class="project-editor">
+    <div class="container editor-container">
+        <a class="editor-back" href="{% url 'main:show_education' %}">
+            ← Kembali ke Education
+        </a>
+
+        <header class="editor-heading">
+            <h1>{{ page_title }}</h1>
+            <p>Kosongkan tahun selesai jika masih berlangsung.</p>
+        </header>
+
+        <form method="post" class="project-form">
+            {% csrf_token %}
+
+            {{ form.non_field_errors }}
+
+            <div class="editor-fields">
+                {% for field in form %}
+                    <div class="editor-field">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="editor-actions">
+                <a class="editor-cancel"
+                   href="{% url 'main:show_education' %}">
+                    Batal
+                </a>
+                <button type="submit" class="editor-save">
+                    Simpan pendidikan
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
