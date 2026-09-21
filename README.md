@@ -82,3 +82,34 @@ python manage.py test
 ```
 
 Semua pengujian berhasil dijalankan dan project tetap dalam kondisi aman.
+
+### Tugas 3
+
+1. ModelForm membantu membuat form berdasarkan model Django. Pada proyek ini, EducationForm menggunakan field institution, program, start_year, dan end_year dari model Education. ModelForm menyediakan validasi serta penyimpanan data, sehingga tidak semuanya perlu ditulis manual. Saat edit, instance=education membuat form memperbarui objek yang dipilih.
+   
+{% csrf_token %} diperlukan pada form POST untuk membantu Django menolak permintaan palsu dari situs lain yang memanfaatkan browser pengguna. Token ini bukan pengganti autentikasi atau izin akses.
+
+2. JSON sering dipilih karena sintaksnya ringkas dan mudah diolah dengan JavaScript maupun bahasa lain. JSON mendukung objek, array, string, angka, boolean, dan null. XML menggunakan tag pembuka dan penutup sehingga biasanya lebih panjang. Meskipun demikian, XML tetap berguna pada sistem yang membutuhkan struktur dokumen atau fitur khusus XML.
+
+3. Ketika /api/education/ dibuka, urls.py mengarahkan      request ke get_education_json. View mengambil data menggunakan Education.objects.all(), kemudian serializers.serialize mengubahnya menjadi teks JSON. HttpResponse mengirim hasilnyadengan content type application/json.
+   
+Serialization diperlukan karena objek model Django tidak dapat langsung dikirim sebagai JSON. Pada halaman Education, show_education membaca respons JSON, melakukan deserialization, lalu meneruskan objek Education ke template melalui context.
+
+### AI disclosure
+
+Saya menggunakan ChatGPT sebagai pendamping belajar untuk memahami ModelForm, GET/POST, CSRF, serta serialization dan deserialization JSON. Bantuan diberikan melalui penjelasan bertahap, contoh kode, dan pemeriksaan implementasi. Saya memasukkan kode EducationForm, view tambah/edit/hapus, routing, dan template secara bertahap, lalu mencoba alurnya menggunakan data latihan. 
+
+### Bagian spesifik yang dibantu AI
+
+Pada pengerjaan Tugas 3, AI membantu:
+- Menjelaskan ModelForm, labels, widgets, GET/POST, CSRF,
+  primary key, serialization, dan deserialization.
+- Memberikan contoh kode EducationForm serta view tambah,
+  edit, hapus, dan penyedia data JSON.
+- Memberikan contoh routing dan template form Education.
+- Menjelaskan penggunaan instance pada form edit agar
+  penyimpanan memperbarui objek yang dipilih.
+- Memeriksa potongan kode, termasuk indentasi fungsi dan
+  form Hapus yang keliru ditempatkan di dalam tautan Edit.
+- Memeriksa file yang tersimpan dan menjalankan pemeriksaan
+  Django.
