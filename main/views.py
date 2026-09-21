@@ -32,8 +32,17 @@ def show_experience(request):
 
 
 def show_education(request):
-    return render(request, 'education.html', {
-        'education_list': Education.objects.all(),
+    json_response = get_education_json(request)
+
+    education_objects = serializers.deserialize(
+        "json",
+        json_response.content.decode("utf-8"),
+    )
+
+    education_list = [item.object for item in education_objects]
+
+    return render(request, "education.html", {
+        "education_list": education_list,
     })
 
 
@@ -125,3 +134,39 @@ def create_education(request):
         "form": form,
         "page_title": "Tambah Pendidikan",
     })
+
+
+def update_education(request, education_id):
+    education = get_object_or_404(Education, pk=education_id)
+
+    if request.method == "POST":
+        form = EducationForm(request.POST, instance=education)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pendidikan berhasil diperbarui!")
+            return redirect("main:show_education")
+    else:
+        form = EducationForm(instance=education)
+
+    return render(request, "education_form.html", {
+        "form": form,
+        "page_title": "Edit Pendidikan",
+    })
+    
+def delete_education(request, education_id):
+    education = get_object_or_404(Education, pk=education_id)
+
+    if request.method == "POST":
+        education.delete()
+        messages.success(request, "Pendidikan berhasil dihapus!")
+
+    return redirect("main:show_education")
+
+def get_education_json(request):
+    education = Education.objects.all()
+    education_json = serializers.serialize("json", education)
+
+    return HttpResponse(
+        education_json,
+        content_type="application/json",
+    )

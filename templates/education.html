@@ -4,6 +4,9 @@
 <section class="section-block portfolio-page">
     <div class="container">
         <div class="section-heading"><h1 class="eyebrow">Education</h1></div>
+        <a href="{% url 'main:create_education' %}" class="social-link">
+            + Tambah Pendidikan
+        </a>
         <div class="education-grid">
             {% for education in education_list %}
             <article class="experience-card">
@@ -17,6 +20,23 @@
                     <h2>{{ education.institution }}</h2>
                 </div>
                 <p>{{ education.program }}</p>
+
+                <a href="{% url 'main:update_education' education.pk %}"
+                    class="social-link">
+                        Edit
+                </a>
+
+                <form
+                    method="post"
+                    action="{% url 'main:delete_education' education.pk %}"
+                    onsubmit="return confirm('Yakin ingin menghapus pendidikan ini?');"
+                >
+                    {% csrf_token %}
+
+                    <button type="submit" class="social-link">
+                        Hapus
+                    </button>
+                </form>
             </article>
             {% empty %}
             <div class="empty-state"><p>Belum ada pendidikan yang ditambahkan.</p></div>
