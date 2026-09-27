@@ -113,3 +113,55 @@ Pada pengerjaan Tugas 3, AI membantu:
   form Hapus yang keliru ditempatkan di dalam tautan Edit.
 - Memeriksa file yang tersimpan dan menjalankan pemeriksaan
   Django.
+
+
+### Tugas 4
+
+Pada tugas ini, saya melanjutkan fitur Education dari Tugas 3
+dengan menerapkan autentikasi, pembatasan hak akses, dan star.
+
+#### Hak akses
+
+- Pengunjung dapat melihat data pendidikan tanpa login.
+- Pengguna yang sudah login dapat memberi atau membatalkan star.
+- Anggota grup Editor dapat mengedit pendidikan, tetapi tidak
+  dapat menambah atau menghapusnya.
+- Superuser dapat menambah, mengedit, dan menghapus pendidikan.
+
+Grup Editor dan keanggotaannya diatur melalui Django Admin.
+Pembatasan diterapkan pada view serta tampilan tombol di template.
+
+#### Fitur star
+
+Education memiliki relasi ManyToManyField dengan User.
+Setiap pengguna dapat memberi maksimal satu star per pendidikan
+dan membatalkannya. Aksi star menggunakan POST dan CSRF token.
+
+Endpoint `/api/education/` menyediakan data pendidikan dalam
+format JSON, dengan username sebagai penanda pemberi star.
+
+#### AI Disclosure
+
+Saya menggunakan ChatGPT sebagai pendamping
+belajar untuk memahami autentikasi, hak akses, dan fitur star
+pada Django.
+
+Saya meminta penjelasan bertahap, contoh kode, serta bantuan
+memeriksa potongan kode dan pesan error.
+
+Bantuan AI meliputi:
+- Menjelaskan perbedaan hak akses pengguna biasa, Editor,
+  dan superuser.
+- Memberikan panduan pembuatan grup Editor melalui Django Admin.
+- Membimbing implementasi relasi ManyToManyField, fungsi star,
+  routing, dan komponen tombol star Education.
+- Membantu menemukan penyebab error NoReverseMatch akibat
+  tombol Edit berada di luar perulangan template.
+- Menjelaskan CSS untuk warna, ukuran, dan ketebalan tulisan.
+
+Contoh interaksi selama pengerjaan:
+- “star itu utk apa?” untuk memahami fungsi star.
+- “font weight utk ap” untuk memahami ketebalan tulisan.
+
+Saya mempelajari dan mencoba hasilnya melalui browser, termasuk
+akses Editor dan fitur star. 

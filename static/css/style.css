@@ -713,3 +713,53 @@ a:focus-visible { outline: 3px solid #81b1ff; outline-offset: 4px; }
     .editor-field-half { grid-column: 1 / -1; }
     .editor-actions { justify-content: space-between; }
 }
+
+.site-header .nav-user {
+    color: rgba(240, 245, 255, 0.8);
+    font-weight: 400;
+    font-size: 10px;
+}
+
+/* Personal photo journal on the Profile page. */
+.moments-section { padding: 2rem 0 5rem; }
+.moments-heading { margin-bottom: 2rem; }
+.moments-kicker { color: #244675; text-transform: uppercase; letter-spacing: .18em; font-size: .7rem; font-weight: 700; }
+.moments-heading h2 { color: #102748; font-size: clamp(2.2rem, 5vw, 4rem); letter-spacing: -.055em; line-height: 1.1; margin: .65rem 0; }
+.moments-heading h2 span { color: #426fb2; }
+.moments-heading > p:last-child { color: #344e70; font-size: .95rem; }
+.moment-feature { display: block; position: relative; overflow: hidden; border-radius: 24px; background: #172333; margin-bottom: 18px; text-decoration: none; }
+.moment-feature img { display: block; width: 100%; height: auto; }
+.moment-feature-caption { position: absolute; inset: auto 0 0; padding: 4rem 2rem 1.5rem; color: white; font-size: clamp(1.4rem, 3vw, 2.4rem); font-weight: 600; background: linear-gradient(transparent, rgba(0,0,0,.75)); }
+.moment-feature-caption span { display: block; font-size: .7rem; font-weight: 400; letter-spacing: .12em; text-transform: uppercase; margin-top: .3rem; }
+.moments-grid { columns: 3; column-gap: 18px; }
+.moment-photo { display: block; break-inside: avoid; margin-bottom: 18px; border-radius: 16px; overflow: hidden; background: #172333; }
+.moment-photo img { display: block; width: 100%; height: auto; transition: transform .35s ease; }
+.moment-photo:focus-visible, .moment-feature:focus-visible { outline: 3px solid #3872c5; outline-offset: 5px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .moment-photo:hover img { transform: scale(1.035); }
+}
+@media (max-width: 800px) { .moments-grid { columns: 2; } }
+@media (max-width: 480px) {
+    .moments-grid { columns: 1; }
+    .moment-feature { border-radius: 16px; }
+    .moment-feature-caption { padding: 2.5rem 1rem 1rem; }
+    .moments-section { padding-bottom: 3rem; }
+}
+
+.photo-viewer { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: rgba(5,12,24,.97); color: white; }
+.photo-viewer::backdrop { background: #050c18; }
+.photo-viewer[open] { display: grid; grid-template-rows: auto minmax(0,1fr) auto; }
+.photo-viewer-bar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; }
+.photo-viewer button { background: #243752; color: white; border: 1px solid #64748b; border-radius: 50%; width: 48px; height: 48px; cursor: pointer; font-size: 1.4rem; }
+.photo-viewer button:focus-visible { outline: 3px solid #b7d4ff; outline-offset: 3px; }
+.photo-viewer-stage { min-height: 0; display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 0 1rem; touch-action: pan-y; }
+.photo-viewer-stage img { min-width: 0; max-width: calc(100% - 128px); max-height: 100%; object-fit: contain; }
+.photo-viewer-stage button { flex-shrink: 0; }
+.photo-viewer-caption { text-align: center; padding: 1rem; font-size: .85rem; color: #d5e1f3; }
+@media (max-width: 600px) {
+ .photo-viewer-stage { position: relative; padding: 0; }
+ .photo-viewer-stage img { max-width: 100%; }
+ .photo-viewer-stage button { position: absolute; bottom: 1rem; background: rgba(36,55,82,.85); }
+ .photo-viewer-prev { left: 1rem; }
+ .photo-viewer-next { right: 1rem; }
+}

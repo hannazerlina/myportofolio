@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
 
         <section class="hero" id="profile">
@@ -37,21 +38,58 @@
             </div>
         </section>
 
-        <section class="section-block" id="skills">
+        <section class="moments-section" aria-labelledby="moments-title">
             <div class="container">
-                <div class="section-heading"><h2 class="eyebrow">Skills</h2></div>
-                <div class="skills-grid">
-<article class="skill-card"><span class="skill-tag">Creative</span><h3>Music & Creative</h3><ul><li>Songwriting, composition & arrangement</li><li>Music direction & orchestra coordination</li><li>Ableton & Logic Pro</li></ul></article>
-<article class="skill-card"><span class="skill-tag">Fundamentals</span><h3>Technology</h3><ul><li>Python & Java — basic</li><li>HTML, CSS & Django MVT — basic</li><li>Git & GitHub — basic</li><li>Algoritma, debugging & problem solving — basic</li></ul></article>
-<article class="skill-card"><span class="skill-tag">Collaboration</span><h3>Leadership & Communication</h3><ul><li>Koordinasi tim & perencanaan acara</li><li>Negosiasi sponsorship</li><li>Pembuatan konten & strategi media sosial</li><li>Digital marketing & presentasi proyek</li></ul></article>
-<article class="skill-card"><span class="skill-tag">Languages</span><h3>Languages</h3><ul><li>Bahasa Indonesia — native</li><li>English — proficient</li><li>Korean — intermediate</li></ul></article>
+                <header class="moments-heading">
+                    <p class="moments-kicker">A little beyond the bio</p>
+                    <h2 id="moments-title">Little moments<span>.</span></h2>
+                    <p>On stage, behind the scenes, and everything in between.</p>
+                </header>
+                <a class="moment-feature" href="{% static 'img/moments/main.jpg' %}" aria-label="Lihat foto utama: memimpin pertunjukan musik">
+                    <img src="{% static 'img/moments/main.jpg' %}" alt="Memimpin para musisi dalam pertunjukan" width="1086" height="724" loading="lazy">
+                    <span class="moment-feature-caption">In my element <span>Music &amp; moments</span></span>
+                </a>
+                <div class="moments-grid">
+                    <a class="moment-photo" href="{% static 'img/moments/moment-1.jpg' %}" aria-label="Lihat foto: Foto bersama di ruang latihan">
+                        <img src="{% static 'img/moments/moment-1.jpg' %}" alt="Foto bersama di ruang latihan" loading="lazy" decoding="async">
+                    </a>
+                    <a class="moment-photo" href="{% static 'img/moments/moment-2.jpg' %}" aria-label="Lihat foto: Momen bersama teman-teman sekolah">
+                        <img src="{% static 'img/moments/moment-2.jpg' %}" alt="Momen bersama teman-teman sekolah" loading="lazy" decoding="async">
+                    </a>
+                    <a class="moment-photo" href="{% static 'img/moments/moment-3.jpg' %}" aria-label="Lihat foto: Foto bersama di panggung dengan penonton">
+                        <img src="{% static 'img/moments/moment-3.jpg' %}" alt="Foto bersama di panggung dengan penonton" loading="lazy" decoding="async">
+                    </a>
+                    <a class="moment-photo" href="{% static 'img/moments/moment-4.jpg' %}" aria-label="Lihat foto: Adegan pertunjukan teater musikal">
+                        <img src="{% static 'img/moments/moment-4.jpg' %}" alt="Adegan pertunjukan teater musikal" loading="lazy" decoding="async">
+                    </a>
+                    <a class="moment-photo" href="{% static 'img/moments/moment-5.jpg' %}" aria-label="Lihat foto: Penampilan menyanyi di panggung luar ruangan">
+                        <img src="{% static 'img/moments/moment-5.jpg' %}" alt="Penampilan menyanyi di panggung luar ruangan" loading="lazy" decoding="async">
+                    </a>
+                    <a class="moment-photo" href="{% static 'img/moments/moment-6.jpg' %}" aria-label="Lihat foto: Foto bersama para musisi setelah pertunjukan">
+                        <img src="{% static 'img/moments/moment-6.jpg' %}" alt="Foto bersama para musisi setelah pertunjukan" loading="lazy" decoding="async">
+                    </a>
+                    <a class="moment-photo" href="{% static 'img/moments/moment-7.jpg' %}" aria-label="Lihat foto: Penampilan vokal di panggung">
+                        <img src="{% static 'img/moments/moment-7.jpg' %}" alt="Penampilan vokal di panggung" loading="lazy" decoding="async">
+                    </a>
+                    <a class="moment-photo" href="{% static 'img/moments/moment-8.jpg' %}" aria-label="Lihat foto: Kegiatan belajar bersama anak-anak">
+                        <img src="{% static 'img/moments/moment-8.jpg' %}" alt="Kegiatan belajar bersama anak-anak" loading="lazy" decoding="async">
+                    </a>
                 </div>
             </div>
         </section>
-        <section class="section-block" id="experience">
-            <div class="container">
-                <div class="section-heading"><h2 class="eyebrow">Experience</h2></div>
-                {% include "includes/experience_list.html" %}
-            </div>
-        </section>
+<dialog class="photo-viewer" aria-label="Galeri foto" aria-describedby="photo-caption">
+    <div class="photo-viewer-bar">
+        <span id="photo-counter" aria-live="polite"></span>
+        <button type="button" class="photo-viewer-close" aria-label="Tutup galeri" autofocus>&times;</button>
+    </div>
+    <div class="photo-viewer-stage">
+        <button type="button" class="photo-viewer-prev" aria-label="Foto sebelumnya">&larr;</button>
+        <img alt="">
+        <button type="button" class="photo-viewer-next" aria-label="Foto berikutnya">&rarr;</button>
+    </div>
+    <p id="photo-caption" class="photo-viewer-caption"></p>
+</dialog>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/photo-gallery.js' %}" defer></script>
 {% endblock %}

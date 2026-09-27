@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260916-form">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260927-lightbox">
     <script src="{% static 'js/motion.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </head>
@@ -24,7 +24,7 @@
                 <a href="{% url 'main:show_achievements' %}">Achievements</a>
 
                 {% if user.is_authenticated %}
-                    <span>Hi, {{ user.username }}!</span>
+                    <span class="nav-user">Hi, {{ user.username }}!</span>
                     <form method="post" action="{% url 'main:logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="social-link" >Logout</button>
