@@ -50,6 +50,7 @@ def show_education(request):
 
     return render(request, "education.html", {
         "education_list": education_list,
+        "is_editor": request.user.groups.filter(name="Editor").exists(),
     })
 
 
@@ -159,7 +160,9 @@ def create_education(request):
 
 @login_required(login_url="main:login")
 def update_education(request, education_id):
-    if not request.user.is_superuser:
+    is_editor = request.user.groups.filter(name="Editor").exists()
+
+    if not (request.user.is_superuser or is_editor):
         raise PermissionDenied
 
     education = get_object_or_404(Education, pk=education_id)

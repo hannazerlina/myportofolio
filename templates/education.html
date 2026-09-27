@@ -1,49 +1,59 @@
 {% extends "base.html" %}
 {% block title %}Education | Hanna Zerlina{% endblock %}
+
 {% block content %}
 <section class="section-block portfolio-page">
     <div class="container">
-        <div class="section-heading"><h1 class="eyebrow">Education</h1></div>
+        <div class="section-heading">
+            <h1 class="eyebrow">Education</h1>
+        </div>
+
         {% if user.is_superuser %}
-        <a href="{% url 'main:create_education' %}" class="social-link">
-            + Tambah Pendidikan
-        </a>
+            <a href="{% url 'main:create_education' %}" class="social-link">
+                + Tambah Pendidikan
+            </a>
         {% endif %}
+
         <div class="education-grid">
             {% for education in education_list %}
-            <article class="experience-card">
-                <span class="experience-year">{{ education.start_year }} — {{ education.end_year|default_if_none:"Present" }}</span>
-                <div class="education-institution">
-                    {% if 'Labschool' in education.institution %}
-                    <img src="/static/img/logo-labschool.png" alt="Logo SMA Labschool">
-                    {% elif 'Indonesia' in education.institution %}
-                    <img src="/static/img/logo-ui.png" alt="Logo Universitas Indonesia">
+                <article class="experience-card">
+                    <span class="experience-year">
+                        {{ education.start_year }} — {{ education.end_year|default_if_none:"Present" }}
+                    </span>
+
+                    <div class="education-institution">
+                        {% if 'Labschool' in education.institution %}
+                            <img src="/static/img/logo-labschool.png" alt="Logo SMA Labschool">
+                        {% elif 'Indonesia' in education.institution %}
+                            <img src="/static/img/logo-ui.png" alt="Logo Universitas Indonesia">
+                        {% endif %}
+                        <h2>{{ education.institution }}</h2>
+                    </div>
+
+                    <p>{{ education.program }}</p>
+
+                    {% if user.is_superuser or is_editor %}
+                        <a href="{% url 'main:update_education' education.pk %}"
+                           class="social-link">
+                            Edit
+                        </a>
                     {% endif %}
-                    <h2>{{ education.institution }}</h2>
-                </div>
-                <p>{{ education.program }}</p>
 
-                {% if user.is_superuser %}
-                <a href="{% url 'main:update_education' education.pk %}"
-                    class="social-link">
-                        Edit
-                </a>
-
-                <form
-                    method="post"
-                    action="{% url 'main:delete_education' education.pk %}"
-                    onsubmit="return confirm('Yakin ingin menghapus pendidikan ini?');"
-                >
-                    {% csrf_token %}
-
-                    <button type="submit" class="social-link">
-                        Hapus
-                    </button>
-                </form>
-                {% endif %}
-            </article>
+                    {% if user.is_superuser %}
+                        <form method="post"
+                              action="{% url 'main:delete_education' education.pk %}"
+                              onsubmit="return confirm('Yakin ingin menghapus pendidikan ini?');">
+                            {% csrf_token %}
+                            <button type="submit" class="social-link">
+                                Hapus
+                            </button>
+                        </form>
+                    {% endif %}
+                </article>
             {% empty %}
-            <div class="empty-state"><p>Belum ada pendidikan yang ditambahkan.</p></div>
+                <div class="empty-state">
+                    <p>Belum ada pendidikan yang ditambahkan.</p>
+                </div>
             {% endfor %}
         </div>
     </div>

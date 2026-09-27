@@ -27,7 +27,7 @@
                     <span>Hi, {{ user.username }}!</span>
                     <form method="post" action="{% url 'main:logout' %}">
                         {% csrf_token %}
-                        <button type="submit" class="social-link">Logout</button>
+                        <button type="submit" class="social-link" >Logout</button>
                     </form>
                 {% else %}
                     <a href="{% url 'main:login' %}">Login</a>
@@ -38,6 +38,7 @@
     </header>
 
     <main>{% block content %}{% endblock %}</main>
+
     <footer class="site-footer">
         <div class="container">
             <p>&copy; 2026 Hanna Zerlina Razaq Putri Wicaksono. Fakultas Ilmu Komputer, Universitas Indonesia.</p>

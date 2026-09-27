@@ -37,6 +37,12 @@ class Education(models.Model):
     start_year = models.PositiveSmallIntegerField()
     end_year = models.PositiveSmallIntegerField(null=True, blank=True)
 
+    starred_by = models.ManyToManyField(
+        User,
+        related_name="starred_educations",
+        blank=True,
+    )
+    
     class Meta:
         ordering = ['-start_year', 'institution']
 
