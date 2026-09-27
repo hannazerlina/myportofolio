@@ -1,0 +1,19 @@
+{% if user.is_authenticated %}
+    <form method="post"
+          action="{% url 'main:toggle_education_star' education.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="social-link">
+            {% if user in education.starred_by.all %}
+                ★ Batalkan Star
+            {% else %}
+                ☆ Star
+            {% endif %}
+            ({{ education.starred_by.count }})
+        </button>
+    </form>
+{% else %}
+    <span>☆ {{ education.starred_by.count }} star</span>
+    <a href="{% url 'main:login' %}" class="social-link">
+        Login untuk memberi star
+    </a>
+{% endif %}
