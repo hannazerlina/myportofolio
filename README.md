@@ -165,3 +165,27 @@ Contoh interaksi selama pengerjaan:
 
 Saya mempelajari dan mencoba hasilnya melalui browser, termasuk
 akses Editor dan fitur star. 
+
+### Tutorial 5 — Web Interactivity with JavaScript
+
+Pada tutorial ini, saya mengembangkan halaman Projects dengan:
+- Memuat daftar proyek melalui Fetch API.
+- Menerapkan pencarian dengan debounce 300 milidetik.
+- Menampilkan form tambah proyek dalam modal.
+- Menambah dan menghapus proyek melalui AJAX tanpa reload.
+- Menampilkan notifikasi berhasil atau gagal menggunakan toast.
+- Memvalidasi input melalui ProjectForm dan method clean.
+- Menggunakan textContent agar data ditampilkan sebagai teks, bukan dieksekusi sebagai HTML.
+
+Aksi tambah dan hapus tetap dibatasi untuk superuser di server.
+Permintaan POST menyertakan token CSRF.
+
+#### Pengujian
+
+Saya mencoba pencarian, membuka dan menutup modal, menambahkan
+proyek, menolak judul yang hanya berisi tag HTML, serta menghapus
+proyek percobaan melalui AJAX.
+
+#### AI Disclosure
+Saya menggunakan ChatGPT untuk penjelasan bertahap,
+contoh kode, dan debugging. Bantuan mencakup penjelasan toast, Fetch API, debounce, modal, validasi, serta penelusuran masalah CSRF dan file statis.

@@ -61,9 +61,10 @@ def show_projects(request):
     if title_query:
         projects = projects.filter(title__icontains=title_query)
 
-    return render(request, 'projects.html', {
-        'project_list': projects,
-        'title_query': title_query,
+    return render(request, "projects.html", {
+        "project_list": projects,
+        "title_query": title_query,
+        "form": ProjectForm(),
     })
 
 @login_required(login_url="main:login")
@@ -125,17 +126,34 @@ def create_project(request):
 
 def get_projects_json(request):
     title_query = request.GET.get("title", "").strip()
-    projects = Project.objects.all()
+    projects = Project.objects.prefetch_related("starred_by")
 
     if title_query:
         projects = projects.filter(title__icontains=title_query)
 
-    projects_json = serializers.serialize(
-        "json",
-        projects,
-        use_natural_foreign_keys=True,
-    )
-    return HttpResponse(projects_json, content_type="application/json")
+    data = []
+
+    for project in projects:
+        users = list(project.starred_by.all())
+
+        data.append({
+            "pk": project.pk,
+            "title": project.title,
+            "role": project.role,
+            "year": project.year,
+            "description": project.description,
+            "spotify_url": project.spotify_url,
+            "star_count": len(users),
+            "is_starred": (
+                request.user.is_authenticated
+                and any(user.pk == request.user.pk for user in users)
+            ),
+            "starred_by_names": ", ".join(
+                user.username for user in users
+            ),
+        })
+
+    return JsonResponse(data, safe=False)
 
 @login_required(login_url="main:login")
 def create_education(request):
@@ -265,3 +283,28 @@ def toggle_education_star(request, education_id):
         education.starred_by.add(request.user)
 
     return redirect("main:show_education")
+
+@require_POST
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan proyek."},
+            status=403,
+        )
+
+    form = ProjectForm(request.POST)
+
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            {
+                "message": "Proyek berhasil ditambahkan.",
+                "pk": project.pk,
+            },
+            status=201,
+        )
+
+    return JsonResponse(
+        {"errors": form.errors.get_json_data()},
+        status=400,
+    )

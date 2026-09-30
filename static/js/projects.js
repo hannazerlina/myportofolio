@@ -1,145 +1,236 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const projectList = document.querySelector('[data-project-list]');
-    const searchForm = document.querySelector('[data-project-search-form]');
-    const searchInput = document.querySelector('[data-project-search-input]');
-
-    if (!projectList || !searchForm || !searchInput) {
-        return;
+function openProjectModal() {
+    const modal = document.getElementById("project-form-modal");
+    if (modal && !modal.open) {
+        modal.showModal();
     }
+}
 
-    const apiUrl = projectList.dataset.apiUrl;
+function closeProjectModal() {
+    const modal = document.getElementById("project-form-modal");
+    if (modal) {
+        modal.close();
+    }
+}
 
-    const getCsrfToken = () => {
-        const cookie = document.cookie
-            .split('; ')
-            .find((entry) => entry.startsWith('csrftoken='));
+document.addEventListener("DOMContentLoaded", () => {
+    const projectList = document.getElementById("project-list");
+    if (!projectList) return;
 
-        return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
-    };
+    const searchForm = document.querySelector("[data-project-search-form]");
+    const searchInput = document.querySelector("[data-project-search-input]");
 
-    const escapeHtml = (value = '') => String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    function buildProjectCard(project) {
+        const card = document.createElement("article");
+        card.className = "project-card";
 
-    const renderProjectCard = (project) => {
-        const spotifyLink = project.spotify_url
-            ? `<a class="social-link" href="${escapeHtml(project.spotify_url)}" target="_blank" rel="noopener noreferrer"><span>Dengarkan di Spotify ↗</span></a>`
-            : '';
+        const status = document.createElement("span");
+        status.className = "project-status";
+        status.textContent = `${project.role} · ${project.year}`;
 
-        return `
-            <article class="project-card">
-                <span class="project-status">${escapeHtml(project.role || 'Project')} · ${escapeHtml(project.year || '')}</span>
-                <h2>${escapeHtml(project.title || 'Judul proyek')}</h2>
-                <p>${escapeHtml(project.description || '')}</p>
-                <div class="project-card-actions">
-                    ${spotifyLink}
-                    <div class="project-actions">
-                        <button type="button" class="button button-danger" popovertarget="delete-project-${escapeHtml(project.id)}" aria-label="Hapus ${escapeHtml(project.title || 'proyek')}">
-                            Hapus Proyek
-                        </button>
-                    </div>
-                </div>
-            </article>
-        `;
-    };
+        const title = document.createElement("h2");
+        title.textContent = project.title;
 
-    const renderEmptyState = (query = '') => {
-        const message = query
-            ? 'Tidak ada proyek dengan nama tersebut.'
-            : 'Belum ada proyek yang ditambahkan.';
+        const description = document.createElement("p");
+        description.textContent = project.description;
 
-        projectList.innerHTML = `
-            <div class="empty-state">
-                <p>${message}</p>
-            </div>
-        `;
-    };
+        card.append(status, title, description);
 
-    const loadProjects = async (query = '') => {
-        const queryParams = new URLSearchParams();
-        if (query) {
-            queryParams.set('title', query);
+        if (project.spotify_url) {
+            const url = new URL(project.spotify_url, window.location.origin);
+
+            if (["https:", "http:"].includes(url.protocol)) {
+                const link = document.createElement("a");
+                link.className = "social-link";
+                link.href = url.href;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = "Dengarkan di Spotify ↗";
+                card.append(link);
+            }
+        }
+        
+        const starForm = document.createElement("form");
+        starForm.method = "post";
+        starForm.action = `/projects/${project.pk}/star/`;
+
+        if (projectList.dataset.isAuthenticated === "true") {
+            const csrf = document.querySelector(
+                "#project-csrf input"
+            ).cloneNode(true);
+            starForm.append(csrf);
+
+            const starButton = document.createElement("button");
+            starButton.type = "submit";
+            starButton.className = "social-link";
+            starButton.textContent =
+                `${project.is_starred ? "★" : "☆"} Star (${project.star_count})`;
+            starButton.setAttribute(
+                "aria-pressed",
+                String(project.is_starred)
+            );
+
+            starForm.append(starButton);
+            card.append(starForm);
+        } else {
+            const loginLink = document.createElement("a");
+            loginLink.href = projectList.dataset.loginUrl;
+            loginLink.className = "social-link";
+            loginLink.textContent = `☆ Star (${project.star_count})`;
+            card.append(loginLink);
         }
 
-        const requestUrl = queryParams.toString() ? `${apiUrl}?${queryParams.toString()}` : apiUrl;
+                if (projectList.dataset.isSuperuser === "true") {
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "social-link";
+            deleteButton.textContent = "Hapus";
 
-        try {
-            const response = await fetch(requestUrl, {
-                headers: {
-                    'Accept': 'application/json',
-                },
+            deleteButton.addEventListener("click", async () => {
+                if (!confirm(`Hapus proyek "${project.title}"?`)) return;
+
+                deleteButton.disabled = true;
+
+                try {
+                    const csrf = document.querySelector(
+                        "#project-csrf input"
+                    ).value;
+
+                    const response = await fetch(
+                        `/projects/${project.pk}/delete/`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "X-CSRFToken": csrf,
+                                "X-Requested-With": "XMLHttpRequest",
+                            },
+                        }
+                    );
+
+                    const result = await response.json().catch(() => ({}));
+
+                    if (!response.ok || !result.success) {
+                        throw new Error("Penghapusan ditolak.");
+                    }
+
+                    showToast("Berhasil", "Proyek dihapus.", "success");
+                    await fetchProjects(
+                        searchInput ? searchInput.value.trim() : ""
+                    );
+                } catch (error) {
+                    showToast(
+                        "Gagal",
+                        "Proyek belum bisa dihapus. Coba lagi.",
+                        "error"
+                    );
+                    console.error(error);
+                } finally {
+                    deleteButton.disabled = false;
+                }
             });
 
+            card.append(deleteButton);
+        }
+        return card;
+    }
+
+    async function fetchProjects(query = "") {
+        projectList.textContent = "Memuat proyek...";
+
+        const url = new URL(
+            projectList.dataset.apiUrl,
+            window.location.origin
+        );
+        url.searchParams.set("title", query);
+
+        try {
+            const response = await fetch(url);
+
             if (!response.ok) {
-                throw new Error('Request gagal');
+                throw new Error(`Status ${response.status}`);
             }
 
             const projects = await response.json();
-            if (!Array.isArray(projects) || projects.length === 0) {
-                renderEmptyState(query);
+            projectList.replaceChildren();
+
+            if (projects.length === 0) {
+                projectList.textContent = "Tidak ada proyek yang ditemukan.";
                 return;
             }
 
-            const cards = projects.map((project) => renderProjectCard(project.fields || project)).join('');
-            projectList.innerHTML = cards;
-
-            document.querySelectorAll('[data-delete-project-form]').forEach((deleteForm) => {
-                deleteForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const form = event.currentTarget;
-                    const submitButton = form.querySelector('button[type="submit"]');
-                    const previousText = submitButton ? submitButton.textContent : 'Ya, Hapus';
-
-                    if (submitButton) {
-                        submitButton.disabled = true;
-                        submitButton.textContent = 'Menghapus...';
-                    }
-
-                    try {
-                        const response = await fetch(form.action, {
-                            method: 'POST',
-                            body: new FormData(form),
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRFToken': getCsrfToken(),
-                            },
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Gagal menghapus proyek');
-                        }
-
-                        const modal = form.closest('[popover]');
-                        if (modal && typeof modal.hide === 'function') {
-                            modal.hide();
-                        }
-
-                        await loadProjects(searchInput.value.trim());
-                    } catch (error) {
-                        console.error('Error deleting project:', error);
-                    } finally {
-                        if (submitButton) {
-                            submitButton.disabled = false;
-                            submitButton.textContent = previousText;
-                        }
-                    }
-                });
+            projects.forEach((project) => {
+                projectList.append(buildProjectCard(project));
             });
         } catch (error) {
-            console.error('Gagal memuat proyek:', error);
-            renderEmptyState(query);
+            projectList.textContent = "Gagal memuat proyek. Coba lagi.";
+            showToast("Gagal", "Tidak dapat memuat daftar proyek.", "error");
+            console.error(error);
         }
-    };
+    }
 
-    searchForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const query = searchInput.value.trim();
-        await loadProjects(query);
-    });
+    if (searchForm && searchInput) {
+        let searchTimer;
 
-    const initialQuery = searchInput.value.trim();
-    loadProjects(initialQuery);
+        searchInput.addEventListener("input", () => {
+            clearTimeout(searchTimer);
+
+            searchTimer = setTimeout(() => {
+                fetchProjects(searchInput.value.trim());
+            }, 300);
+        });
+
+        searchForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            clearTimeout(searchTimer);
+            fetchProjects(searchInput.value.trim());
+        });
+    }
+    
+    const projectForm = document.getElementById("project-form");
+
+    if (projectForm) {
+        projectForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const button = projectForm.querySelector('[type="submit"]');
+            button.disabled = true;
+            button.textContent = "Menyimpan...";
+
+            try {
+                const response = await fetch(projectForm.action, {
+                    method: "POST",
+                    body: new FormData(projectForm),
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    const errors = result.errors
+                        ? Object.values(result.errors)
+                            .flat()
+                            .map((error) => error.message)
+                            .join(" ")
+                        : result.message || `Gagal menyimpan (${response.status}).`;
+
+                    showToast("Gagal", errors, "error");
+                    return;
+                }
+
+                projectForm.reset();
+                closeProjectModal();
+                showToast("Berhasil", "Proyek berhasil ditambahkan!", "success");
+                await fetchProjects(searchInput ? searchInput.value.trim() : "");
+            } catch (error) {
+                showToast(
+                    "Gagal",
+                    "Tidak dapat terhubung ke server. Coba lagi.",
+                    "error"
+                );
+                console.error(error);
+            } finally {
+                button.disabled = false;
+                button.textContent = "Simpan Proyek";
+            }
+        });
+    }
+    fetchProjects(searchInput ? searchInput.value.trim() : "");
 });
