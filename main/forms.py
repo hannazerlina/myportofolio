@@ -66,6 +66,26 @@ class ProjectForm(ModelForm):
         }
         
 class EducationForm(ModelForm):
+    def clean_institution(self):
+        institution = strip_tags(
+            self.cleaned_data["institution"]
+        ).strip()
+
+        if not institution:
+            raise ValidationError("Nama institusi tidak boleh kosong.")
+
+        return institution
+
+    def clean_program(self):
+        program = strip_tags(
+            self.cleaned_data["program"]
+        ).strip()
+
+        if not program:
+            raise ValidationError("Program studi tidak boleh kosong.")
+
+        return program
+
     class Meta:
         model = Education
         fields = ["institution", "program", "start_year", "end_year"]

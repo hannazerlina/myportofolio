@@ -1,63 +1,66 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Education | Hanna Zerlina{% endblock %}
 
 {% block content %}
 <section class="section-block portfolio-page">
     <div class="container">
-        <div class="section-heading">
-            <h1 class="eyebrow">Education</h1>
+        <div class="project-header">
+            <div class="section-heading">
+                <h1 class="eyebrow">Education</h1>
+            </div>
+
+            {% if user.is_superuser %}
+                <button type="button"
+                        class="social-link"
+                        onclick="openEducationModal()">
+                    + Tambah Pendidikan
+                </button>
+            {% endif %}
+        </div>
+
+        <form id="education-search"
+              method="get"
+              action="{% url 'main:show_education' %}"
+              class="project-search">
+            <input type="search"
+                   id="education-search-input"
+                   name="institution"
+                   placeholder="Cari nama sekolah atau universitas"
+                   aria-label="Cari institusi"
+                   class="project-search__input">
+
+            <button type="submit" class="button">Cari</button>
+        </form>
+
+        <div id="education-csrf" hidden>
+            {% csrf_token %}
+        </div>
+
+        <div id="education-list"
+             class="education-grid"
+             aria-live="polite"
+             data-api-url="{% url 'main:get_education_json' %}"
+             data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
+             data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"
+             data-is-editor="{{ is_editor|yesno:'true,false' }}"
+             data-login-url="{% url 'main:login' %}"
+             data-edit-url="{% url 'main:update_education' 0 %}"
+             data-delete-url="{% url 'main:delete_education' 0 %}"
+             data-star-url="{% url 'main:toggle_education_star' 0 %}"
+             data-labschool-logo="{% static 'img/logo-labschool.png' %}"
+             data-ui-logo="{% static 'img/logo-ui.png' %}">
+            <p>Memuat pendidikan...</p>
         </div>
 
         {% if user.is_superuser %}
-            <a href="{% url 'main:create_education' %}" class="social-link">
-                + Tambah Pendidikan
-            </a>
+            {% include "components/education_form_modal.html" %}
         {% endif %}
-
-        <div class="education-grid">
-            {% for education in education_list %}
-                <article class="experience-card">
-                    <span class="experience-year">
-                        {{ education.start_year }} — {{ education.end_year|default_if_none:"Present" }}
-                    </span>
-
-                    <div class="education-institution">
-                        {% if 'Labschool' in education.institution %}
-                            <img src="/static/img/logo-labschool.png" alt="Logo SMA Labschool">
-                        {% elif 'Indonesia' in education.institution %}
-                            <img src="/static/img/logo-ui.png" alt="Logo Universitas Indonesia">
-                        {% endif %}
-                        <h2>{{ education.institution }}</h2>
-                    </div>
-
-                    <p>{{ education.program }}</p>
-
-                    {% include "components/education_star.html" with education=education %}
-
-                    {% if user.is_superuser or is_editor %}
-                        <a href="{% url 'main:update_education' education.pk %}"
-                           class="social-link">
-                            Edit
-                        </a>
-                    {% endif %}
-
-                    {% if user.is_superuser %}
-                        <form method="post"
-                              action="{% url 'main:delete_education' education.pk %}"
-                              onsubmit="return confirm('Yakin ingin menghapus pendidikan ini?');">
-                            {% csrf_token %}
-                            <button type="submit" class="social-link">
-                                Hapus
-                            </button>
-                        </form>
-                    {% endif %}
-                </article>
-            {% empty %}
-                <div class="empty-state">
-                    <p>Belum ada pendidikan yang ditambahkan.</p>
-                </div>
-            {% endfor %}
-        </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/education.js' %}?v=1" defer></script>
 {% endblock %}

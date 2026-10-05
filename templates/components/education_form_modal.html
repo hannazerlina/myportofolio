@@ -1,0 +1,48 @@
+<dialog id="education-modal" class="project-form-modal"
+        aria-labelledby="education-modal-title">
+    <button type="button"
+            onclick="closeEducationModal()"
+            aria-label="Tutup formulir">
+        ×
+    </button>
+
+    <h2 id="education-modal-title">Tambah Pendidikan</h2>
+
+    <form id="education-form"
+          method="post"
+          action="{% url 'main:create_education_ajax' %}">
+        {% csrf_token %}
+
+        <div class="editor-fields">
+            {% for field in form %}
+                <div class="editor-field">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small>{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <p id="education-form-error"
+           role="alert"
+           hidden></p>
+
+        <div class="project-card-actions">
+            <button type="button"
+                    class="social-link"
+                    onclick="closeEducationModal()">
+                Batal
+            </button>
+
+            <button type="submit" class="social-link">
+                Simpan Pendidikan
+            </button>
+        </div>
+    </form>
+</dialog>

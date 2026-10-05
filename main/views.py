@@ -39,18 +39,13 @@ def show_experience(request):
 
 
 def show_education(request):
-    json_response = get_education_json(request)
-
-    education_objects = serializers.deserialize(
-        "json",
-        json_response.content.decode("utf-8"),
-    )
-
-    education_list = [item.object for item in education_objects]
-
     return render(request, "education.html", {
-        "education_list": education_list,
-        "is_editor": request.user.groups.filter(name="Editor").exists(),
+        "education_list": Education.objects.all(),
+        "form": EducationForm(),
+        "is_editor": (
+            request.user.is_authenticated
+            and request.user.groups.filter(name="Editor").exists()
+        ),
     })
 
 
@@ -213,13 +208,33 @@ def delete_education(request, education_id):
     return redirect("main:show_education")
 
 def get_education_json(request):
-    education = Education.objects.all()
-    education_json = serializers.serialize("json", education, use_natural_foreign_keys=True)
+    query = request.GET.get("institution", "").strip()
+    education_list = Education.objects.prefetch_related("starred_by")
 
-    return HttpResponse(
-        education_json,
-        content_type="application/json",
-    )
+    if query:
+        education_list = education_list.filter(
+            institution__icontains=query
+        )
+
+    data = []
+
+    for education in education_list:
+        users = list(education.starred_by.all())
+
+        data.append({
+            "pk": education.pk,
+            "institution": education.institution,
+            "program": education.program,
+            "start_year": education.start_year,
+            "end_year": education.end_year,
+            "star_count": len(users),
+            "is_starred": (
+                request.user.is_authenticated
+                and any(user.pk == request.user.pk for user in users)
+            ),
+        })
+
+    return JsonResponse(data, safe=False)
 
 
 def register(request):
@@ -308,3 +323,25 @@ def create_project_ajax(request):
         {"errors": form.errors.get_json_data()},
         status=400,
     )
+    
+@require_POST
+def create_education_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse({
+            "message": "Hanya superuser yang boleh menambah pendidikan."
+        }, status=403)
+
+    form = EducationForm(request.POST)
+
+    if form.is_valid():
+        education = form.save()
+
+        return JsonResponse({
+            "message": "Pendidikan berhasil ditambahkan!",
+            "pk": education.pk,
+        }, status=201)
+
+    return JsonResponse({
+        "message": "Periksa kembali data yang kamu isi.",
+        "errors": form.errors.get_json_data(),
+    }, status=400)

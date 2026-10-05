@@ -18,6 +18,7 @@ from main.views import (
     logout_user,
     toggle_education_star,
     create_project_ajax,
+    create_education_ajax,
 )
 
 
@@ -42,4 +43,5 @@ urlpatterns = [
     path("projects/<int:project_id>/star/", toggle_star, name="toggle_star"),
     path("education/<int:education_id>/star/", toggle_education_star, name="toggle_education_star"),
     path("projects/add-ajax/", create_project_ajax, name="create_project_ajax"),
+    path("education/add-ajax/", create_education_ajax, name="create_education_ajax"),
 ]
