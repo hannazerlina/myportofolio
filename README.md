@@ -189,3 +189,85 @@ proyek percobaan melalui AJAX.
 #### AI Disclosure
 Saya menggunakan ChatGPT untuk penjelasan bertahap,
 contoh kode, dan debugging. Bantuan mencakup penjelasan toast, Fetch API, debounce, modal, validasi, serta penelusuran masalah CSRF dan file statis.
+
+### Tugas 5
+
+ 1. Apa itu debouncing dan mengapa penting untuk pencarian AJAX?
+
+Debouncing adalah teknik menunda pemanggilan fungsi sampai pengguna
+berhenti melakukan suatu aktivitas selama waktu tertentu.
+
+Pada pencarian Education, saya menggunakan jeda 300 milidetik.
+Setiap pengguna mengetik kembali, timer sebelumnya dibatalkan.
+Dengan begitu, permintaan pencarian tidak dikirim untuk setiap
+huruf yang diketik, sehingga mengurangi permintaan ke server.
+
+2. Mengapa menggunakan await pada fetch? Apa yang terjadi tanpa await?
+
+fetch() mengembalikan Promise. await menunggu Promise tersebut
+selesai sebelum melanjutkan baris berikutnya dalam fungsi async,
+tanpa menghentikan seluruh interaksi halaman.
+
+Tanpa await, variabel hasil fetch() masih berupa Promise, bukan
+objek Response. Kita perlu menangani hasilnya menggunakan .then()
+atau menunggunya dengan await sebelum membaca respons.
+
+response.json() juga mengembalikan Promise, sehingga perlu
+ditunggu untuk mendapatkan data JSON yang sudah diubah menjadi
+objek JavaScript.
+
+3. Apa itu XSS dan mengapa rendering melalui JavaScript perlu diperhatikan?
+
+Cross-Site Scripting (XSS) adalah serangan ketika input yang tidak
+tepercaya diperlakukan sebagai kode aktif dan dijalankan oleh browser.
+
+Django template melakukan autoescaping secara default. Saat membuat
+tampilan melalui JavaScript, perlindungan itu tidak otomatis berlaku.
+Memasukkan data tidak tepercaya ke innerHTML dapat membuat browser
+menafsirkannya sebagai HTML dan membuka celah XSS.
+
+Pada Education, saya menggunakan textContent untuk menampilkan
+data sebagai teks. Saya juga menggunakan strip_tags pada
+EducationForm untuk membersihkan tag HTML dari nama institusi
+dan program studi, serta menolak hasil yang kosong.
+
+strip_tags bukan jaminan keamanan untuk semua konteks. Penggunaan
+textContent tetap diperlukan agar data ditampilkan dengan aman.
+
+#### Implementasi
+
+Saya menerapkan AJAX pada bagian Education dengan:
+- Endpoint JSON berisi data pendidikan, jumlah star, dan status
+  star pengguna yang sedang login.
+- Pencarian institusi dengan debouncing 300 milidetik.
+- Tampilan loading, hasil kosong, dan pesan gagal memuat data.
+- Modal tambah pendidikan yang mengirim FormData melalui fetch.
+- CSRF token yang ikut dikirim bersama data form.
+- Pembaruan daftar tanpa reload setelah penambahan berhasil.
+- Toast berhasil atau gagal dan pesan validasi pada modal.
+- Validasi EducationForm dan rendering menggunakan textContent.
+- Pembatasan akses: superuser dapat menambah, mengedit, dan
+  menghapus; Editor dapat mengedit; pengguna biasa dapat
+  memberikan star; pengunjung dapat melihat dan mencari data.
+
+#### Pengujian manual
+
+Pengujian yang telah saya lakukan:
+- Menambahkan pendidikan melalui modal dan melihat kartu baru
+  muncul tanpa reload.
+- Memasukkan <b></b> sebagai nama institusi dan memastikan
+  validasi menolak hasil yang kosong setelah tag dibersihkan.
+- Memasukkan tag gambar dengan atribut onerror dan memastikan
+  input ditolak tanpa menjalankan popup JavaScript.
+- Memastikan pengunjung dapat melihat serta mencari pendidikan,
+  tetapi tidak melihat tombol pengelolaan data.
+- Menguji akses pengguna biasa dan akun Editor.
+- Menyimpan pendidikan melalui akun Editor.
+- Membuka URL edit dengan akun biasa dan menerima 403 Forbidden.
+- Mencari institusi yang tidak ada, lalu mengosongkan pencarian
+  untuk menampilkan kembali daftar.
+- Pengujian kondisi koneksi offline.
+
+#### Penggunaan AI
+
+Saya menggunakan ChatGPT untuk membantu memahami dan mengerjakan AJAX secara bertahap. AI membantu memberikan contoh endpoint JSON, validasi form, modal, pencarian dengan debouncing, dan pengiriman form melalui fetch. Saya menjalankan pengujian manual di browser serta pmeriksaan Django dan sintaks JavaScript.
