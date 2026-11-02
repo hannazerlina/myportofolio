@@ -336,8 +336,4 @@ pengerjaan ini.
 
 #### Bantuan AI
 
-ChatGPT melalui Codex membantu menyesuaikan contoh Tutorial 7 dengan model
-portofolio musik, mengimplementasikan serializer, permission, API dan integrasi
-JavaScript, serta menulis dan menjalankan pengujian. Implementasi langsung dan
-commit bertahap dilakukan atas permintaan saya. Dokumentasi ini membedakan tes
-otomatis yang dijalankan dari pemeriksaan manual yang belum dilakukan.
+ChatGPT membantu menyesuaikan contoh Tutorial 7 dengan model portofolio musik. Dokumentasi ini membedakan tes otomatis yang dijalankan dari pemeriksaan manual yang belum dilakukan.
