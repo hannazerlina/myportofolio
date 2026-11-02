@@ -21,7 +21,8 @@ class MainTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "index.html")
-        self.assertContains(response, self.experience.title)
+        self.assertContains(response, "Hanna Zerlina")
+        self.assertContains(response, "Little moments")
         self.assertContains(response, f'href="{reverse("main:show_experience")}"')
 
     def test_nonexistent_page_returns_404(self):
@@ -74,13 +75,17 @@ class EducationTests(TestCase):
         from main.models import Education
         Education.objects.create(institution='Sekolah Contoh', program='SMA', start_year=2022, end_year=2025)
         Education.objects.create(institution='Kampus Contoh', program='Information Systems', start_year=2025)
-        response = self.client.get(reverse('main:show_education'))
-        for text in ['Sekolah Contoh', 'Kampus Contoh', 'Information Systems', '2022', '2025', 'Present']:
-            self.assertContains(response, text)
+        response = self.client.get(reverse('main:get_education_json'))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual([item['institution'] for item in data], ['Kampus Contoh', 'Sekolah Contoh'])
+        self.assertIsNone(data[0]['end_year'])
+        self.assertEqual(data[1]['start_year'], 2022)
 
     def test_empty_state(self):
         response = self.client.get(reverse('main:show_education'))
-        self.assertContains(response, 'Belum ada pendidikan yang ditambahkan.')
+        self.assertContains(response, 'Memuat pendidikan...')
+        self.assertEqual(self.client.get(reverse('main:get_education_json')).json(), [])
 
 
 class ProjectTests(TestCase):
@@ -98,21 +103,30 @@ class ProjectTests(TestCase):
         from main.models import Project
         for title in ['Musikal Satu', 'Musikal Dua']:
             Project.objects.create(title=title, role='Music Director', year=2024, description='Aransemen musik.', spotify_url='https://open.spotify.com/track/example')
-        response = self.client.get(reverse('main:show_projects'))
-        for text in ['Musikal Satu', 'Musikal Dua', 'Music Director', '2024', 'Aransemen musik.', 'https://open.spotify.com/track/example']:
-            self.assertContains(response, text)
+        response = self.client.get(reverse('api:project-list'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual({item['title'] for item in response.json()}, {'Musikal Satu', 'Musikal Dua'})
+        for item in response.json():
+            self.assertEqual(item['role'], 'Music Director')
+            self.assertEqual(item['year'], 2024)
+            self.assertEqual(item['description'], 'Aransemen musik.')
+            self.assertEqual(item['spotify_url'], 'https://open.spotify.com/track/example')
 
     def test_empty_state(self):
         response = self.client.get(reverse('main:show_projects'))
-        self.assertContains(response, 'Belum ada proyek yang ditambahkan.')
+        self.assertContains(response, 'Memuat proyek...')
+        self.assertContains(response, 'data-api-url="/api/v1/projects/"')
+        self.assertEqual(self.client.get(reverse('api:project-list')).json(), [])
 
     def test_optional_link_and_html_escaping(self):
         from main.models import Project
         Project.objects.create(title='<script>alert(1)</script>', role='Composer', year=2024, description='Musik')
         response = self.client.get(reverse('main:show_projects'))
         self.assertNotContains(response, '<script>alert(1)</script>')
-        self.assertContains(response, '&lt;script&gt;')
-        self.assertNotContains(response, 'Dengarkan di Spotify')
+        # JSON preserves legacy text; the client renders it with textContent.
+        data = self.client.get(reverse('api:project-list')).json()
+        self.assertEqual(data[0]['title'], '<script>alert(1)</script>')
+        self.assertEqual(data[0]['spotify_url'], '')
 
 
 class NavigationTests(TestCase):
@@ -199,7 +213,7 @@ class RegisterTests(TestCase):
             'password1': password,
             'password2': password,
         })
-        self.assertRedirects(response, reverse('main:show_main'))
+        self.assertRedirects(response, reverse('main:login'))
         user = get_user_model().objects.get(username='registration_test')
         self.assertTrue(user.check_password(password))
         self.assertNotEqual(user.password, password)

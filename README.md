@@ -271,3 +271,73 @@ Pengujian yang telah saya lakukan:
 #### Penggunaan AI
 
 Saya menggunakan ChatGPT untuk membantu memahami dan mengerjakan AJAX secara bertahap. AI membantu memberikan contoh endpoint JSON, validasi form, modal, pencarian dengan debouncing, dan pengiriman form melalui fetch. Saya menjalankan pengujian manual di browser serta pmeriksaan Django dan sintaks JavaScript.
+
+### Tutorial 7 — Django REST Framework
+
+Projects sekarang menggunakan Django REST Framework 3.18.3 dengan database dan
+model yang sudah ada. Penyesuaian terhadap contoh tutorial: ID Project berupa
+integer, dan field portofolio musik adalah `title`, `role`, `year`, `description`,
+serta `spotify_url`. Tidak ada migrasi model atau penggantian data.
+
+#### Kontrak API
+
+| Method | URL | Akses |
+| --- | --- | --- |
+| GET | `/api/v1/projects/?title=...` | Semua pengunjung |
+| POST | `/api/v1/projects/` | Superuser |
+| GET | `/api/v1/projects/<id>/` | Semua pengunjung |
+| PUT / PATCH | `/api/v1/projects/<id>/` | Superuser |
+| DELETE | `/api/v1/projects/<id>/` | Superuser |
+| POST | `/api/v1/projects/<id>/star/` | Pengguna login |
+
+`ProjectSerializer` menghasilkan objek JSON datar dengan `id`, bukan `pk` atau
+`fields`. `star_count`, `is_starred`, dan `starred_by_names` bersifat read-only.
+Validasi teks dijalankan kembali pada serializer karena API tidak menjalankan
+validasi `ProjectForm`. Link Spotify tetap divalidasi sebagai URL.
+
+API menggunakan `SessionAuthentication`. Operasi tulis mengirim `X-CSRFToken`.
+Permission server membatasi pengelolaan Projects kepada superuser; menjadi staff
+atau anggota Editor tidak memberi izin mengubah Projects. Hak Editor pada
+Education yang sudah ada tetap dipertahankan. Kelas
+`IsPortfolioOwnerOrEditorOrReadOnly` disiapkan untuk penerapan DRF pada bagian
+pilihan di Tugas 6; Education saat ini masih memakai endpoint sebelumnya.
+
+Frontend Projects memakai fetch untuk daftar, tambah, hapus, dan toggle star.
+Pencarian menggunakan debounce 300 ms dan AbortController, sedangkan teks
+menggunakan textContent. Modal dan toast tetap dipakai. Respons DELETE 204 tidak
+diparsing sebagai JSON. PUT/PATCH tersedia di API/Browsable API; tutorial ini
+tidak menambahkan modal edit Projects baru. Endpoint lama tetap tersedia agar
+halaman dan pekerjaan sebelumnya tidak dihapus.
+
+#### Menjalankan dan memeriksa
+
+```bash
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python manage.py check
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py test main.tests_api --verbosity 2
+python manage.py test main
+python manage.py runserver
+```
+
+Hasil pemeriksaan lokal: 13 tes API dan seluruh 36 tes app `main` lulus.
+Cakupannya meliputi GET publik, pencarian, 404, create, PUT/PATCH/DELETE, validasi,
+star, field read-only, penolakan akses, method yang salah, dan session dengan/tanpa
+CSRF. Tes lama diperbarui agar memeriksa JSON untuk daftar yang kini dirender AJAX,
+profil dengan galeri, serta redirect registrasi ke login.
+
+Pemeriksaan browser dilakukan untuk pemuatan Projects sebagai pengunjung dan
+pencarian tanpa hasil. Operasi tulis diverifikasi melalui tes API; pemeriksaan
+manual seluruh alur login/modal/star/delete di browser dan deployment PWS masih
+perlu dilakukan sebelum pengumpulan. Belum dilakukan push atau deployment dalam
+pengerjaan ini.
+
+#### Bantuan AI
+
+ChatGPT melalui Codex membantu menyesuaikan contoh Tutorial 7 dengan model
+portofolio musik, mengimplementasikan serializer, permission, API dan integrasi
+JavaScript, serta menulis dan menjalankan pengujian. Implementasi langsung dan
+commit bertahap dilakukan atas permintaan saya. Dokumentasi ini membedakan tes
+otomatis yang dijalankan dari pemeriksaan manual yang belum dilakukan.
