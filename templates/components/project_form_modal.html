@@ -10,7 +10,7 @@
         <h2>Tambah Proyek</h2>
         <form id="project-form"
             method="post"
-            action="{% url 'main:create_project_ajax' %}">
+            action="{% url 'api:project-list' %}">
             {% csrf_token %}
 
             <div class="editor-fields">
@@ -24,6 +24,7 @@
                 {% endfor %}
             </div>
 
+            <p id="project-form-error" role="alert" hidden></p>
             <div class="editor-actions">
                 <button type="button"
                         class="editor-cancel"

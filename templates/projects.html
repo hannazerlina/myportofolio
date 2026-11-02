@@ -30,7 +30,10 @@
         </div>
         <div id="project-list"
             class="project-list"
-            data-api-url="{% url 'main:get_projects_json' %}"
+            aria-live="polite"
+            data-api-url="{% url 'api:project-list' %}"
+            data-detail-url="{% url 'api:project-detail' 0 %}"
+            data-star-url="{% url 'api:project-star' 0 %}"
             data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
             data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"
             data-login-url="{% url 'main:login' %}">
@@ -44,5 +47,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/projects.js' %}?v=ajax-3" defer></script>
+<script src="{% static 'js/projects.js' %}?v=drf-7" defer></script>
 {% endblock %}
