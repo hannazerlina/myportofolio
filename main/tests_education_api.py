@@ -144,3 +144,24 @@ class EducationAPITest(APITestCase):
         self.assertEqual(self.client.delete(self.list_url).status_code, 405)
         self.assertEqual(self.client.get(self.star_url).status_code, 405)
         self.assert_unchanged()
+
+    def test_education_page_exposes_drf_routes_and_role_controls(self):
+        for user in (None, self.visitor, self.editor, self.owner):
+            self.client.logout()
+            if user:
+                self.client.force_login(user)
+            response = self.client.get(reverse("main:show_education"))
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, 'data-api-url="/api/v1/education/"')
+            self.assertContains(response, 'data-detail-url="/api/v1/education/0/"')
+            self.assertContains(response, 'data-star-url="/api/v1/education/0/star/"')
+            self.assertContains(response, 'name="csrfmiddlewaretoken"')
+            if user in (self.editor, self.owner):
+                self.assertContains(response, 'id="education-modal"')
+                self.assertContains(response, 'action="/api/v1/education/"')
+            else:
+                self.assertNotContains(response, 'id="education-modal"')
+            if user == self.owner:
+                self.assertContains(response, '+ Tambah Pendidikan')
+            else:
+                self.assertNotContains(response, '+ Tambah Pendidikan')

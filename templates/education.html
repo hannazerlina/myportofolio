@@ -41,20 +41,19 @@
         <div id="education-list"
              class="education-grid"
              aria-live="polite"
-             data-api-url="{% url 'main:get_education_json' %}"
+             data-api-url="{% url 'api:education-list' %}"
              data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
              data-is-superuser="{{ user.is_superuser|yesno:'true,false' }}"
              data-is-editor="{{ is_editor|yesno:'true,false' }}"
              data-login-url="{% url 'main:login' %}"
-             data-edit-url="{% url 'main:update_education' 0 %}"
-             data-delete-url="{% url 'main:delete_education' 0 %}"
-             data-star-url="{% url 'main:toggle_education_star' 0 %}"
+             data-detail-url="{% url 'api:education-detail' 0 %}"
+             data-star-url="{% url 'api:education-star' 0 %}"
              data-labschool-logo="{% static 'img/logo-labschool.png' %}"
              data-ui-logo="{% static 'img/logo-ui.png' %}">
             <p>Memuat pendidikan...</p>
         </div>
 
-        {% if user.is_superuser %}
+        {% if user.is_superuser or is_editor %}
             {% include "components/education_form_modal.html" %}
         {% endif %}
     </div>
@@ -62,5 +61,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/education.js' %}?v=1" defer></script>
+<script src="{% static 'js/education.js' %}?v=drf-6" defer></script>
 {% endblock %}

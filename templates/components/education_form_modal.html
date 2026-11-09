@@ -10,7 +10,7 @@
 
     <form id="education-form"
           method="post"
-          action="{% url 'main:create_education_ajax' %}">
+          action="{% url 'api:education-list' %}">
         {% csrf_token %}
 
         <div class="editor-fields">

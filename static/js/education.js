@@ -1,8 +1,24 @@
-function openEducationModal() {
-    document.getElementById("education-modal")?.showModal();
+function openEducationModal(education = null) {
+    const modal = document.getElementById("education-modal");
+    const form = document.getElementById("education-form");
+    if (!modal || !form || form.dataset.saving === "true") return;
+    form.reset();
+    form.dataset.editId = education ? String(education.id) : "";
+    document.getElementById("education-modal-title").textContent =
+        education ? "Edit Pendidikan" : "Tambah Pendidikan";
+    const errorBox = document.getElementById("education-form-error");
+    errorBox.hidden = true;
+    errorBox.textContent = "";
+    if (education) {
+        for (const name of ["institution", "program", "start_year", "end_year"]) {
+            form.elements.namedItem(name).value = education[name] ?? "";
+        }
+    }
+    if (!modal.open) modal.showModal();
 }
 
 function closeEducationModal() {
+    if (document.getElementById("education-form")?.dataset.saving === "true") return;
     document.getElementById("education-modal")?.close();
 }
 
@@ -31,28 +47,37 @@ document.addEventListener("DOMContentLoaded", () => {
         return pattern.replace("/0/", `/${id}/`);
     }
 
-    function makePostForm(url, label, confirmation) {
-        const form = document.createElement("form");
-        form.method = "post";
-        form.action = url;
+    function notify(title, message, type) {
+        if (typeof showToast === "function") showToast(title, message, type);
+    }
 
-        if (csrfInput) {
-            form.append(csrfInput.cloneNode(true));
+    async function requestEducation(url, method = "GET", data) {
+        const headers = { Accept: "application/json" };
+        if (method !== "GET") headers["X-CSRFToken"] = csrfInput?.value || "";
+        if (data !== undefined) headers["Content-Type"] = "application/json";
+        const response = await fetch(url, {
+            method, headers, credentials: "same-origin",
+            ...(data !== undefined ? { body: JSON.stringify(data) } : {}),
+        });
+        if (response.status === 204) return null;
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const message = Object.entries(result).map(([field, errors]) => {
+                const text = Array.isArray(errors) ? errors.join(" ") : String(errors);
+                return field === "detail" ? text : `${field}: ${text}`;
+            }).join(" ");
+            throw new Error(message || `Permintaan gagal (${response.status}).`);
         }
+        return result;
+    }
 
+    function actionButton(action, education, label) {
         const button = makeElement("button", "social-link", label);
-        button.type = "submit";
-        form.append(button);
-
-        if (confirmation) {
-            form.addEventListener("submit", (event) => {
-                if (!window.confirm(confirmation)) {
-                    event.preventDefault();
-                }
-            });
-        }
-
-        return form;
+        button.type = "button";
+        button.dataset.action = action;
+        button.dataset.id = education.id;
+        button.dataset.institution = education.institution;
+        return button;
     }
 
     function makeCard(education) {
@@ -85,17 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const actions = makeElement("div", "project-card-actions");
 
         if (authenticated) {
-            const starForm = makePostForm(
-                itemUrl(list.dataset.starUrl, education.pk),
-                `${education.is_starred ? "★" : "☆"} Star (${education.star_count})`
-            );
-
-            starForm.querySelector("button").setAttribute(
-                "aria-pressed",
-                String(education.is_starred)
-            );
-
-            actions.append(starForm);
+            const starButton = actionButton("star", education,
+                `${education.is_starred ? "★" : "☆"} Star (${education.star_count})`);
+            starButton.setAttribute("aria-pressed", String(education.is_starred));
+            actions.append(starButton);
         } else {
             actions.append(
                 makeElement("span", "", `☆ ${education.star_count} star`)
@@ -109,17 +127,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (superuser || editor) {
-            const edit = makeElement("a", "social-link", "Edit");
-            edit.href = itemUrl(list.dataset.editUrl, education.pk);
-            actions.append(edit);
+            actions.append(actionButton("edit", education, "Edit"));
         }
-
         if (superuser) {
-            actions.append(makePostForm(
-                itemUrl(list.dataset.deleteUrl, education.pk),
-                "Hapus",
-                "Yakin ingin menghapus pendidikan ini?"
-            ));
+            actions.append(actionButton("delete", education, "Hapus"));
         }
 
         card.append(years, institution, program, actions);
@@ -142,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const response = await fetch(url, {
                 signal: controller.signal,
+                headers: { Accept: "application/json" },
             });
 
             if (!response.ok) {
@@ -171,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (error.name === "AbortError") return;
 
             list.textContent = "Gagal memuat pendidikan. Coba cari kembali.";
-            console.error(error);
+            notify("Gagal", "Tidak dapat memuat pendidikan.", "error");
         } finally {
             if (activeRequest === controller) {
                 list.setAttribute("aria-busy", "false");
@@ -194,66 +206,74 @@ document.addEventListener("DOMContentLoaded", () => {
         fetchEducation(searchInput.value.trim());
     });
 
-    // Kode simpan modal akan kita tambahkan di sini.
+    list.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button || button.disabled) return;
+        const action = button.dataset.action;
+        const detailUrl = itemUrl(list.dataset.detailUrl, button.dataset.id);
+        if (action === "delete" && !confirm(`Hapus pendidikan "${button.dataset.institution}"?`)) return;
+        button.disabled = true;
+        try {
+            if (action === "edit") {
+                const education = await requestEducation(detailUrl);
+                openEducationModal(education);
+                return;
+            }
+            const result = await requestEducation(
+                action === "star" ? itemUrl(list.dataset.starUrl, button.dataset.id) : detailUrl,
+                action === "star" ? "POST" : "DELETE",
+            );
+            notify("Berhasil", action === "delete" ? "Pendidikan dihapus." :
+                (result.is_starred ? "Star ditambahkan." : "Star dibatalkan."), "success");
+            await fetchEducation(searchInput.value.trim());
+        } catch (error) {
+            notify("Gagal", error.message, "error");
+        } finally {
+            button.disabled = false;
+        }
+    });
 
     const educationForm = document.getElementById("education-form");
-
-if (educationForm) {
-    educationForm.addEventListener("submit", async (event) => {
+    const modal = document.getElementById("education-modal");
+    modal?.addEventListener("cancel", (event) => {
+        if (educationForm.dataset.saving === "true") event.preventDefault();
+    });
+    educationForm?.addEventListener("submit", async (event) => {
         event.preventDefault();
-
+        if (educationForm.dataset.saving === "true") return;
         const button = educationForm.querySelector("[type='submit']");
         const errorBox = document.getElementById("education-form-error");
-
+        const editId = educationForm.dataset.editId;
+        educationForm.dataset.saving = "true";
         button.disabled = true;
         button.textContent = "Menyimpan...";
         errorBox.hidden = true;
         errorBox.textContent = "";
-
         try {
-            const response = await fetch(educationForm.action, {
-                method: "POST",
-                body: new FormData(educationForm),
-            });
-
-            const result = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                const errors = Object.values(result.errors || {})
-                    .flat()
-                    .map((error) => error.message)
-                    .join(" ");
-
-                throw new Error(
-                    errors || result.message || "Gagal menyimpan pendidikan."
-                );
-            }
-
-            educationForm.reset();
+            const data = Object.fromEntries(new FormData(educationForm));
+            delete data.csrfmiddlewaretoken;
+            // An empty optional year is JSON null, not an invalid integer string.
+            data.end_year = data.end_year === "" ? null : Number(data.end_year);
+            data.start_year = Number(data.start_year);
+            await requestEducation(
+                editId ? itemUrl(list.dataset.detailUrl, editId) : educationForm.action,
+                editId ? "PATCH" : "POST", data,
+            );
+            educationForm.dataset.saving = "false";
             closeEducationModal();
-
-            if (typeof showToast === "function") {
-                showToast(
-                    "Berhasil",
-                    "Pendidikan berhasil ditambahkan!",
-                    "success"
-                );
-            }
-
+            educationForm.reset();
+            notify("Berhasil", editId ? "Pendidikan diperbarui!" : "Pendidikan ditambahkan!", "success");
             await fetchEducation(searchInput.value.trim());
         } catch (error) {
             errorBox.textContent = error.message;
             errorBox.hidden = false;
-
-            if (typeof showToast === "function") {
-                showToast("Gagal", error.message, "error");
-            }
+            notify("Gagal", error.message, "error");
         } finally {
+            educationForm.dataset.saving = "false";
             button.disabled = false;
             button.textContent = "Simpan Pendidikan";
         }
     });
-}
 
     fetchEducation();
 });
