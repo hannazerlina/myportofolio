@@ -337,3 +337,154 @@ pengerjaan ini.
 #### Bantuan AI
 
 ChatGPT membantu menyesuaikan contoh Tutorial 7 dengan model portofolio musik. Dokumentasi ini membedakan tes otomatis yang dijalankan dari pemeriksaan manual yang belum dilakukan.
+
+### Tugas 6
+
+Pada tugas ini, bagian **Education** dari Tugas 3–5 menggunakan Django REST
+Framework. Model dan data pendidikan yang sudah ada tetap digunakan. Halaman
+Projects dari Tutorial 7 serta bagian portofolio lainnya tetap tersedia.
+
+#### 1. REST serta perbedaan PUT dan PATCH
+
+REST (Representational State Transfer) adalah gaya arsitektur untuk merancang
+komunikasi antara klien dan server. Data dipandang sebagai resource yang memiliki
+alamat, misalnya `/api/v1/education/`. Tindakan terhadap resource dinyatakan
+melalui method HTTP, seperti GET untuk membaca dan DELETE untuk menghapus.
+
+Mengembalikan JSON saja belum membuat API menjadi RESTful karena JSON hanya
+format representasi data. Desain resource, penggunaan method, status HTTP, dan
+prinsip seperti stateless juga perlu diperhatikan. Implementasi ini menggunakan
+session Django, sehingga belum sepenuhnya stateless karena informasi session
+masih disimpan di server.
+
+PUT digunakan untuk mengirim representasi lengkap data yang akan diperbarui.
+Contohnya, mengganti institusi, program, tahun masuk, dan tahun selesai sekaligus.
+Pada serializer ini, PUT harus menyertakan seluruh field wajib. Field opsional
+tetap mengikuti aturan serializer, sehingga PUT tidak otomatis mengosongkan
+semua field opsional yang tidak dikirim.
+
+PATCH digunakan untuk pembaruan sebagian, misalnya hanya mengganti `program`
+menjadi `Sistem Informasi`. Field yang tidak dikirim tetap menggunakan nilai
+sebelumnya. Modal edit Education menggunakan PATCH.
+
+#### 2. Peran serializer dan keuntungannya
+
+Serializer mengubah objek model menjadi data Python yang dapat dirender DRF
+sebagai JSON. Pada arah sebaliknya, serializer memvalidasi input sebelum membuat
+atau memperbarui objek model. `EducationSerializer` menggunakan ModelSerializer
+agar definisi field dan operasi penyimpanan dasar dapat mengikuti model Education.
+
+Dibandingkan merakit dictionary dengan JsonResponse, serializer membantu menjaga
+struktur respons tetap konsisten dan menyatukan aturan validasi input. Daftar
+field ditulis eksplisit agar hanya data yang diperlukan yang ditampilkan.
+`star_count` dan `is_starred` dihitung melalui SerializerMethodField dan tidak
+bisa diubah melalui payload klien.
+
+Validasi `validate_institution` dan `validate_program` membersihkan tag HTML dengan
+strip_tags, lalu menolak hasil yang kosong. Validasi serializer perlu ditulis
+tersendiri karena API tidak menjalankan metode `clean_<field>` milik ModelForm.
+Teks pada halaman ditampilkan menggunakan textContent; strip_tags sendiri bukan
+jaminan keamanan untuk semua konteks HTML.
+
+#### 3. Autentikasi dan otorisasi
+
+Autentikasi menentukan siapa pengguna yang mengirim permintaan. Pada API ini,
+SessionAuthentication menggunakan session login Django untuk mengenali pengguna.
+Otorisasi menentukan tindakan yang boleh dilakukan pengguna tersebut.
+
+Endpoint daftar dan detail menggunakan IsPortfolioOwnerOrEditorOrReadOnly:
+- Pengunjung dapat membaca daftar dan detail.
+- Pengguna biasa juga dapat memberikan atau membatalkan star.
+- Editor dapat mengubah data dengan PUT/PATCH, tetapi tidak boleh membuat atau
+  menghapus pendidikan.
+- Superuser dapat membuat, mengubah, dan menghapus pendidikan.
+
+Endpoint star menggunakan IsAuthenticated dan mengambil akun dari request.user,
+bukan dari ID pengguna yang dikirim klien. Menyembunyikan tombol hanya membantu
+tampilan. Pengguna masih bisa mengirim request langsung ke URL API, sehingga
+permission di server tetap harus memeriksa setiap tindakan.
+
+#### 4. SessionAuthentication, CSRF, dan pengujiannya
+
+Browser dapat mengirim cookie session secara otomatis. Karena itu, penyerang
+berpotensi membuat browser pengguna yang sedang login mengirim permintaan yang
+tidak diinginkan. Token CSRF membantu server memeriksa permintaan tersebut.
+Penggunaan JSON atau AJAX tidak menghilangkan kebutuhan perlindungan CSRF.
+
+Setiap operasi tulis dari halaman Education mengirim header X-CSRFToken.
+Token diperoleh dari input tersembunyi yang dihasilkan oleh tag csrf_token,
+termasuk pada halaman pengguna biasa yang hanya bisa memberikan star.
+
+force_authenticate membantu menguji hak akses dengan menetapkan pengguna secara
+langsung, tetapi melewati proses autentikasi session yang sesungguhnya. Karena
+itu, tes tersebut belum membuktikan perlindungan CSRF. Tes tambahan menggunakan
+APIClient(enforce_csrf_checks=True) dan login() untuk memastikan POST tanpa token
+ditolak dengan 403 dan database tidak berubah. Tes juga memastikan POST dengan
+token yang valid berhasil.
+
+#### Implementasi dan endpoint
+
+| Method | Endpoint | Fungsi | Akses |
+| --- | --- | --- | --- |
+| GET | `/api/v1/education/?institution=...` | Daftar dan pencarian | Semua pengunjung |
+| POST | `/api/v1/education/` | Tambah pendidikan | Superuser |
+| GET | `/api/v1/education/<id>/` | Detail pendidikan | Semua pengunjung |
+| PUT / PATCH | `/api/v1/education/<id>/` | Ubah pendidikan | Editor dan superuser |
+| DELETE | `/api/v1/education/<id>/` | Hapus pendidikan | Superuser |
+| POST | `/api/v1/education/<id>/star/` | Toggle star | Pengguna login |
+
+ID Education berupa integer. Respons menggunakan status 201 untuk penambahan,
+400 untuk input tidak valid, 403 untuk akses yang ditolak, 404 untuk objek yang
+tidak ditemukan, dan 204 tanpa body setelah penghapusan berhasil.
+
+Halaman Education menggunakan fetch untuk daftar, pencarian, tambah, edit, star,
+dan hapus. Pencarian tetap memakai debounce 300 ms dan AbortController. Modal
+edit mengambil detail terbaru sebelum menampilkan isian. Tahun selesai yang
+kosong dikirim sebagai null, dan tahun selesai tidak boleh mendahului tahun masuk.
+Toast menampilkan keberhasilan maupun kesalahan API. Respons 204 tidak diparsing
+sebagai JSON. Nama institusi dan program ditampilkan sebagai teks menggunakan
+textContent.
+
+#### Menjalankan dan menguji
+
+Jalankan dari folder yang berisi manage.py:
+
+```bash
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python manage.py migrate
+python manage.py check
+python manage.py collectstatic --noinput
+python manage.py test main.tests_education_api --verbosity 2
+python manage.py test main
+python manage.py runserver
+```
+
+Buka `/education/` untuk halaman Education atau `/api/v1/education/` untuk
+Browsable API. Gunakan akun dengan peran yang sesuai untuk mencoba operasi tulis.
+
+Hasil pengujian otomatis lokal: **47 tes lulus**, termasuk **11 tes Education**
+dan tes Projects dari Tutorial 7. Pengujian Education mencakup empat peran,
+isi database setelah akses ditolak, validasi teks dan tahun, PUT/PATCH, star,
+field read-only, CSRF, serta ketersediaan tombol dan modal sesuai peran.
+Sintaks JavaScript juga telah diperiksa. Hasil ini tidak menggantikan pengujian
+manual seluruh alur browser maupun pengecekan deployment PWS.
+
+#### Bantuan AI
+
+Saya menggunakan ChatGPT untuk memahami konsep DRF, mendiskusikan langkah
+pengerjaan, serta membantu implementasi dan pengujian API Education.
+
+Strategi prompting yang digunakan adalah memberikan tautan instruksi Tugas 6,
+meminta pengerjaan bertahap, dan meminta kesempatan untuk memeriksa perubahan
+sebelum setiap commit. Bantuan meliputi serializer, permission, endpoint API,
+integrasi AJAX dan modal edit, pengujian, serta penyusunan draf dokumentasi.
+
+Contoh permintaan dalam percakapan:
+- “tolong ini dan commit berkala tp aku mau cek dl sblm commit, yaa”
+- “ok commit dl pk tugas 6: add ...”
+- “tambah aja tugas 6 jgn dr awal d gnti smw”
+
+Kode dan penjelasan dari AI tetap perlu diperiksa terhadap instruksi tugas dan
+struktur proyek. Tes otomatis membantu memeriksa perilaku API, tetapi tidak
+menjamin seluruh interaksi browser dan kondisi deployment sudah teruji.
