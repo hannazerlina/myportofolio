@@ -35,6 +35,8 @@ ALLOWED_HOSTS += [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(
 
 # Production flag from environment
 PRODUCTION = os.getenv('PRODUCTION', 'False').lower() == 'true'
+if not PRODUCTION:
+    ALLOWED_HOSTS.append("10.0.2.2")  # Android emulator's address for the host.
 
 
 # Application definition
@@ -48,10 +50,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'main',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -156,3 +160,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
     "https://hanna-zerlina-myportofolio.pws.cs.ui.ac.id",
 ]
+
+# Configure only the origins that host the Flutter web client.
+MOBILE_WEB_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "MOBILE_WEB_ORIGINS",
+        "" if PRODUCTION else "http://127.0.0.1:8099,http://localhost:8099",
+    ).split(",")
+    if origin.strip()
+]
+CORS_ALLOWED_ORIGINS = MOBILE_WEB_ORIGINS
+CORS_ALLOW_CREDENTIALS = True
+CORS_URLS_REGEX = r"^/(auth/|api/v1/)"
+CSRF_TRUSTED_ORIGINS += MOBILE_WEB_ORIGINS
+SESSION_COOKIE_SECURE = PRODUCTION
+CSRF_COOKIE_SECURE = PRODUCTION
